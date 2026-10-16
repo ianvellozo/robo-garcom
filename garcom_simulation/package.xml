@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>garcom_simulation</name>
+  <version>0.1.0</version>
+  <description>Mundo do restaurante e modelo do P3-DX no Gazebo</description>
+  <maintainer email="ana@todo.com">Ana</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

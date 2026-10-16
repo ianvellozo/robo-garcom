@@ -1,0 +1,8 @@
+# Carregado no namespace /garcom pelo sim.launch.
+#
+# O prazo maximo de entrega (deadline_s) e definido no launch, para poder trocar
+# na hora da demonstracao:
+#   roslaunch garcom_bringup sim.launch deadline_s:=30 order_period_s:=5
+
+# Fracao do prazo em que o pedido entra em alerta (0.7 = 70% do prazo)
+warning_ratio: 0.7

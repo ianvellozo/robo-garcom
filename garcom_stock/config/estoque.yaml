@@ -1,0 +1,6 @@
+# Quantidade inicial de cada item no estoque.
+# A rosquinha comeca zerada para testar a recusa de pedidos.
+stock:
+  cafe: 10
+  croissant: 5
+  rosquinha: 0

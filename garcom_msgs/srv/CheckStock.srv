@@ -1,0 +1,5 @@
+# Verifica se ha estoque para todos os itens de um pedido
+string[] items
+---
+bool available
+string[] missing     # itens sem estoque

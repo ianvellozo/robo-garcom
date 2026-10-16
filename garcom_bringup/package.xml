@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>garcom_bringup</name>
+  <version>0.1.0</version>
+  <description>Arquivos launch que sobem o sistema completo do Robo Garcom</description>
+  <maintainer email="ian@todo.com">Ian</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>garcom_mission</exec_depend>
+  <exec_depend>garcom_navigation</exec_depend>
+  <exec_depend>garcom_perception</exec_depend>
+  <exec_depend>garcom_interface</exec_depend>
+  <exec_depend>garcom_stock</exec_depend>
+</package>

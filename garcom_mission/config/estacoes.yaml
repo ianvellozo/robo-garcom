@@ -1,0 +1,10 @@
+# Estacao de coleta de cada item do cardapio
+stations:
+  cafe: estacao_cafe
+  croissant: estacao_croissant
+
+# Ponto onde o robo espera entre os pedidos
+base: base
+
+# Tempo maximo esperando a leitura do ArUco na estacao (s)
+marker_timeout_s: 10.0

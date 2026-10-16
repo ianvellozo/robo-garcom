@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!--
+  Sistema completo do Robo Garcom - versao 19/10.
+  Navegacao, percepcao e interface ainda sao nos-esqueleto (simulados).
+
+  Uso normal:
+    roslaunch garcom_bringup sim.launch
+  Demonstracao dos alertas de prazo (prazo curto e pedidos mais frequentes):
+    roslaunch garcom_bringup sim.launch deadline_s:=30 order_period_s:=5
+-->
+<launch>
+  <!-- Prazo maximo de entrega de cada pedido (s) -->
+  <arg name="deadline_s" default="600"/>
+  <!-- Intervalo entre os pedidos de teste da interface simulada (s) -->
+  <arg name="order_period_s" default="20"/>
+  <!-- Topico de velocidade: /cmd_vel no Gazebo, /RosAria/cmd_vel no P3-DX real -->
+  <arg name="cmd_vel_topic" default="/cmd_vel"/>
+
+  <!-- Parametros compartilhados por todos os nos: /garcom/deadline_s e /garcom/warning_ratio -->
+  <param name="garcom/deadline_s" value="$(arg deadline_s)"/>
+  <rosparam command="load" ns="garcom" file="$(find garcom_mission)/config/prazos.yaml"/>
+
+  <!-- Estoque (Mariana) -->
+  <node pkg="garcom_stock" type="stock_server.py" name="stock_server" output="screen">
+    <rosparam command="load" file="$(find garcom_stock)/config/estoque.yaml"/>
+  </node>
+
+  <!-- Fila de pedidos e missoes (Ian) -->
+  <node pkg="garcom_mission" type="order_queue.py" name="order_queue" output="screen"/>
+  <node pkg="garcom_mission" type="mission_manager.py" name="mission_manager" output="screen">
+    <rosparam command="load" file="$(find garcom_mission)/config/estacoes.yaml"/>
+  </node>
+
+  <!-- Navegacao (Ana) -->
+  <node pkg="garcom_navigation" type="navigation_node.py" name="navigation" output="screen">
+    <rosparam command="load" file="$(find garcom_navigation)/config/pontos.yaml"/>
+    <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
+  </node>
+
+  <!-- Percepcao (Mariana) -->
+  <node pkg="garcom_perception" type="aruco_node.py" name="perception" output="screen">
+    <rosparam command="load" file="$(find garcom_perception)/config/marcadores.yaml"/>
+  </node>
+
+  <!-- Interface de pedidos (Mariana) -->
+  <node pkg="garcom_interface" type="interface_node.py" name="interface" output="screen">
+    <param name="period_s" value="$(arg order_period_s)"/>
+  </node>
+</launch>

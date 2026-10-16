@@ -1,0 +1,4 @@
+# Pede a fila o proximo pedido a ser atendido
+---
+bool has_order
+OrderStatus order

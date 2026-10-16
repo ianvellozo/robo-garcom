@@ -1,0 +1,13 @@
+# Pontos nomeados do restaurante: posicao x, y (m) e orientacao yaw (rad) no mapa.
+# TODO(Ana): medir as coordenadas reais no mapa do Gazebo e do laboratorio.
+points:
+  base:              {x: 0.0, y: 0.0, yaw: 0.0}
+  estacao_cafe:      {x: 3.0, y: 2.0, yaw: 1.57}
+  estacao_croissant: {x: 3.0, y: -2.0, yaw: -1.57}
+  mesa_1:            {x: 6.0, y: 2.0, yaw: 0.0}
+  mesa_2:            {x: 6.0, y: -2.0, yaw: 0.0}
+  mesa_3:            {x: 9.0, y: 2.0, yaw: 0.0}
+  mesa_4:            {x: 9.0, y: -2.0, yaw: 0.0}
+
+# Tempo de cada viagem simulada (s) - usado apenas pelo no-esqueleto
+travel_time_s: 3.0

@@ -1,0 +1,8 @@
+# Goal: nome de um ponto cadastrado (base, estacao_cafe, mesa_2...)
+string point_name
+---
+# Result
+bool success
+---
+# Feedback
+float32 distance_remaining

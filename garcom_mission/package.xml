@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>garcom_mission</name>
+  <version>0.1.0</version>
+  <description>Fila de pedidos e gerenciamento de missoes do Robo Garcom</description>
+  <maintainer email="ian@todo.com">Ian</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>garcom_msgs</depend>
+  <exec_depend>actionlib</exec_depend>
+</package>

@@ -1,0 +1,15 @@
+# Pastas geradas pelo catkin_make (ficam fora do repositorio)
+build/
+devel/
+install/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editores e sistema
+.vscode/
+.idea/
+*.swp
+.DS_Store
