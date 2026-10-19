@@ -19,6 +19,7 @@ add_service_files(FILES
   CheckStock.srv
   NextOrder.srv
   Restock.srv
+  SetStock.srv
 )
 
 add_action_files(FILES

@@ -6,6 +6,7 @@ Lê o cardápio de /garcom/cardapio (config/cardapio.yaml) e:
   pedido e, com reserve = true, já dá baixa neles (reserva para o pedido);
 - serviço /garcom/restock: repõe um item, por exemplo:
     rosservice call /garcom/restock "{item: 'rosquinha', quantity: 5}"
+- serviço /garcom/set_stock: define a quantidade de um item (botão Estoque da tela da bancada);
 - tópico /garcom/stock: publica o estoque atual sempre que ele muda;
 - avisa quando um item chega no nível de estoque baixo.
 """
@@ -14,7 +15,8 @@ from collections import Counter
 
 import rospy
 from garcom_msgs.msg import StockLevels
-from garcom_msgs.srv import CheckStock, CheckStockResponse, Restock, RestockResponse
+from garcom_msgs.srv import (CheckStock, CheckStockResponse, Restock, RestockResponse,
+                             SetStock, SetStockResponse)
 
 
 class StockServer:
@@ -29,6 +31,7 @@ class StockServer:
         self.pub = rospy.Publisher("/garcom/stock", StockLevels, queue_size=1, latch=True)
         rospy.Service("/garcom/check_stock", CheckStock, self.on_check)
         rospy.Service("/garcom/restock", Restock, self.on_restock)
+        rospy.Service("/garcom/set_stock", SetStock, self.on_set)
 
         self.publish()
         rospy.loginfo("Estoque pronto: %s", self.summary())
@@ -57,6 +60,17 @@ class StockServer:
                 rospy.logwarn("Estoque baixo: %s (%d restante(s))", self.names[item], self.stock[item])
             self.publish()
         return CheckStockResponse(available=not missing, missing=missing)
+
+    def on_set(self, req):
+        if req.item not in self.stock:
+            return SetStockResponse(success=False, total=0, message="Item fora do cardápio: %s" % req.item)
+        if req.quantity < 0:
+            return SetStockResponse(success=False, total=self.stock[req.item], message="Quantidade não pode ser negativa")
+        with self.lock:
+            self.stock[req.item] = req.quantity
+        rospy.loginfo("Estoque ajustado: %s = %d", self.names[req.item], req.quantity)
+        self.publish()
+        return SetStockResponse(success=True, total=req.quantity, message="ok")
 
     def on_restock(self, req):
         if req.item not in self.stock:

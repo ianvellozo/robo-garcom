@@ -9,4 +9,5 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rospy</depend>
   <depend>garcom_msgs</depend>
+  <exec_depend>rospkg</exec_depend>
 </package>

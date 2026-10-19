@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Robô Garçom: mesa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="mesa-body">
+  <header class="topbar">
+    <h1 class="brand"><span id="brandMark"></span>Robô Garçom</h1>
+    <button class="chip" id="tableChip" hidden>Mesa 1</button>
+  </header>
+
+  <p class="offline" id="offline" role="alert" hidden>Sem conexão com o robô. Confira se o sistema está rodando.</p>
+
+  <main class="mesa-main">
+    <!-- escolher a mesa -->
+    <section id="pickView" hidden>
+      <h2 class="greeting">Em qual mesa você está?</h2>
+      <div class="table-grid" id="tableGrid"></div>
+    </section>
+
+    <!-- cardápio -->
+    <section id="menuView" hidden>
+      <h2 class="greeting">O que vai ser hoje?</h2>
+      <button class="track-link" id="trackLink" hidden></button>
+      <ul class="menu-sheet" id="menuList"></ul>
+    </section>
+
+    <!-- acompanhamento do pedido -->
+    <section class="track" id="trackView" hidden>
+      <h2 id="trackTitle">Pedido</h2>
+      <p class="track-msg" id="trackMsg" aria-live="polite"></p>
+      <div class="route" id="route">
+        <div class="route-robot" id="routeRobot"></div>
+        <div class="route-line"></div>
+        <div class="route-done" id="routeDone"></div>
+        <ol class="route-stops" id="routeStops">
+          <li>Pedido feito</li>
+          <li>Bancada</li>
+          <li id="routeTable">Sua mesa</li>
+        </ol>
+      </div>
+      <p class="track-time" id="trackTime"></p>
+      <p class="track-note" id="trackNote" hidden>Está demorando mais que o normal. A equipe já foi avisada.</p>
+      <ul class="track-items" id="trackItems"></ul>
+      <button class="btn-quiet" id="newOrderBtn">Fazer outro pedido</button>
+    </section>
+  </main>
+
+  <footer class="cart" id="cartBar" hidden>
+    <div class="cart-inner">
+      <div>
+        <span class="cart-count" id="cartCount">Nenhum item escolhido</span>
+        <strong class="cart-total" id="cartTotal">R$ 0,00</strong>
+      </div>
+      <button class="btn-main" id="orderBtn" disabled>Fazer pedido</button>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="common.js"></script>
+  <script src="mesa.js"></script>
+</body>
+</html>

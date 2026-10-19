@@ -1,0 +1,7 @@
+# Define a quantidade de um item no estoque (usado pela tela da bancada)
+string item
+int32 quantity
+---
+bool success
+int32 total
+string message

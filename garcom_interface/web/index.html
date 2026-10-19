@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Robô Garçom</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="brand"><span id="brandMark"></span>Robô Garçom</h1>
+  </header>
+  <main class="home">
+    <h2 class="greeting">Qual tela você quer abrir?</h2>
+    <nav class="home-links">
+      <a href="/mesa"><strong>Tela da mesa</strong><span>Para o cliente escolher os itens e acompanhar o robô.</span></a>
+      <a href="/bancada"><strong>Tela da bancada</strong><span>Para o funcionário montar a bandeja e ajustar o estoque.</span></a>
+    </nav>
+  </main>
+  <script src="common.js"></script>
+  <script>document.getElementById("brandMark").innerHTML = ROBOT_SVG;</script>
+</body>
+</html>

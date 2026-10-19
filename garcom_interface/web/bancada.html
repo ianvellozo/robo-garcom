@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Robô Garçom: bancada</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="brand"><span id="brandMark"></span><span id="benchTitle">Bancada</span></h1>
+    <div class="topbar-actions">
+      <span class="clock" id="clock"></span>
+      <button class="btn-quiet" id="stockBtn">Estoque</button>
+    </div>
+  </header>
+
+  <p class="offline" id="offline" role="alert" hidden>Sem conexão com o robô. Confira se o sistema está rodando.</p>
+
+  <main class="bench">
+    <section class="ticket-area" id="ticketArea" aria-live="polite"></section>
+
+    <aside class="floor">
+      <h2>No salão</h2>
+      <ul class="floor-list" id="floorList"></ul>
+    </aside>
+  </main>
+
+  <dialog class="stock-dialog" id="stockDialog">
+    <form method="dialog" id="stockForm">
+      <h2>Estoque</h2>
+      <p>Ajuste a quantidade de cada item e salve.</p>
+      <ul class="stock-list" id="stockList"></ul>
+      <div class="dialog-actions">
+        <button class="btn-quiet" value="cancel" formnovalidate>Cancelar</button>
+        <button class="btn-main" id="stockSave" value="save">Salvar estoque</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="common.js"></script>
+  <script src="bancada.js"></script>
+</body>
+</html>

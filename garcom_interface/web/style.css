@@ -1,0 +1,613 @@
+/* Robô Garçom: telas da mesa e da bancada.
+   Cores de lanchonete (fórmica menta, mostarda) e a comanda em papel térmico. */
+
+@font-face {
+  font-family: "Recursive";
+  src: url("fonts/recursive.woff2") format("woff2");
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+:root {
+  --formica: #d5ece2;
+  --formica-deep: #bfe0d2;
+  --ink: #0f2e2d;
+  --ink-soft: #4a6865;
+  --paper: #ffffff;
+  --mustard: #f2b01e;
+  --mustard-press: #dc9b07;
+  --steel: #9ab5b0;
+  --warn: #a9520a;
+  --late: #b42e26;
+  --ok: #1f7a50;
+  --shadow: 0 14px 28px -16px rgba(15, 46, 45, 0.45);
+  --font: "Recursive", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 18px;
+  line-height: 1.5;
+  font-variation-settings: "CASL" 0, "MONO" 0;
+  background-color: var(--formica);
+  /* pintinhas de fórmica */
+  background-image:
+    radial-gradient(rgba(15, 46, 45, 0.07) 1px, transparent 1.6px),
+    radial-gradient(rgba(255, 255, 255, 0.55) 1px, transparent 1.6px);
+  background-size: 23px 23px, 31px 31px;
+  background-position: 0 0, 11px 7px;
+}
+
+button { font: inherit; color: inherit; }
+
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+[hidden] { display: none !important; }
+
+/* ------------------------------------------------------------ topo */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  font-variation-settings: "CASL" 1;
+  letter-spacing: -0.01em;
+}
+
+.brand svg { width: 34px; height: 34px; flex: none; }
+
+.brand-sub { font-weight: 500; color: var(--ink-soft); }
+
+.chip {
+  border: 2px solid var(--ink);
+  background: transparent;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chip:hover { background: rgba(255, 255, 255, 0.5); }
+
+.offline {
+  margin: 0 24px 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--late);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------ botões */
+.btn-main {
+  border: 0;
+  border-radius: 16px;
+  padding: 16px 28px;
+  background: var(--mustard);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 800;
+  font-variation-settings: "CASL" 1;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--mustard-press);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.btn-main:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--mustard-press); }
+
+.btn-main:disabled {
+  background: #e3e9e7;
+  color: var(--ink-soft);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn-quiet {
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  padding: 10px 20px;
+  background: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-quiet:hover { background: rgba(255, 255, 255, 0.55); }
+
+/* ======================================================== TELA DA MESA */
+.mesa-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px 140px;
+}
+
+.greeting {
+  margin: 8px 0 20px;
+  font-size: clamp(30px, 6vw, 44px);
+  line-height: 1.1;
+  font-weight: 800;
+  font-variation-settings: "CASL" 1;
+  letter-spacing: -0.02em;
+}
+
+.track-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0 0 18px;
+  padding: 14px 18px;
+  border: 2px dashed var(--ink);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.45);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* o cardápio é uma folha só, como um cardápio impresso */
+.menu-sheet {
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  background: var(--paper);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
+
+.menu-row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.menu-row + .menu-row { border-top: 2px dashed var(--formica-deep); }
+
+.menu-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fdf0cf;
+  font-size: 34px;
+}
+
+.menu-name {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 750;
+  font-variation-settings: "CASL" 1;
+  line-height: 1.2;
+}
+
+.menu-price { color: var(--ink-soft); font-weight: 600; }
+
+.menu-row.is-out { opacity: 0.55; }
+.menu-row.is-out .menu-price { color: var(--late); }
+
+.stepper { display: flex; align-items: center; gap: 6px; }
+
+.stepper button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stepper button:disabled { border-color: var(--steel); color: var(--steel); cursor: not-allowed; }
+
+.stepper output {
+  min-width: 34px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* carrinho fixo embaixo */
+.cart {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+  background: var(--ink);
+  color: #fff;
+}
+
+.cart-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: 760px;
+}
+
+.cart-count { display: block; font-size: 15px; color: #b9d3cd; }
+.cart-total { font-size: 24px; font-weight: 800; }
+
+/* -------------------------------------------------- acompanhamento */
+.track { padding-top: 4px; }
+
+.track h2 {
+  margin: 0;
+  font-size: clamp(30px, 6vw, 44px);
+  font-weight: 800;
+  font-variation-settings: "CASL" 1;
+  letter-spacing: -0.02em;
+}
+
+.track-msg { margin: 6px 0 28px; font-size: 22px; max-width: 32ch; }
+
+/* o trajeto do robô: pedido feito → bancada → mesa */
+.route {
+  position: relative;
+  margin: 0 12px 12px;
+  padding-top: 64px;
+}
+
+.route-line {
+  height: 0;
+  border-top: 5px dotted var(--ink);
+  opacity: 0.35;
+}
+
+.route-done {
+  position: absolute;
+  left: 0;
+  top: 62px;
+  height: 5px;
+  width: 0;
+  background: var(--ink);
+  border-radius: 3px;
+  transition: width 1.2s ease;
+}
+
+.route-stops {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px -12px 0;
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.route-stops li { width: 33%; }
+.route-stops li:nth-child(2) { text-align: center; }
+.route-stops li:last-child { text-align: right; }
+.route-stops li.is-reached { color: var(--ink); }
+
+.route-robot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  margin-left: -28px;
+  transition: left 1.2s ease;
+}
+
+.track-time {
+  margin: 30px 0 6px;
+  font-size: 18px;
+  color: var(--ink-soft);
+}
+
+.track-time strong { color: var(--ink); font-size: 22px; }
+
+.track-note { margin: 0 0 18px; font-weight: 600; color: var(--warn); }
+
+.track-items {
+  margin: 18px 0 28px;
+  padding: 16px 20px;
+  list-style: none;
+  background: var(--paper);
+  border-radius: 16px;
+  font-size: 20px;
+}
+
+.track.is-refused .track-msg { color: var(--late); }
+
+/* -------------------------------------------------- escolher a mesa */
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.table-grid button {
+  aspect-ratio: 1;
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  background: var(--paper);
+  font-size: 28px;
+  font-weight: 800;
+  font-variation-settings: "CASL" 1;
+  cursor: pointer;
+}
+
+.table-grid button:hover { background: #fdf0cf; }
+
+/* ===================================================== TELA DA BANCADA */
+.bench {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr);
+  gap: 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 24px 40px;
+}
+
+.clock { font-size: 20px; font-weight: 700; color: var(--ink-soft); }
+
+.topbar-actions { display: flex; align-items: center; gap: 18px; }
+
+/* a comanda: papel térmico com borda picotada */
+.ticket-area { min-width: 0; }
+
+.ticket-wrap {
+  position: relative;
+  max-width: 560px;
+  filter: drop-shadow(0 12px 16px rgba(15, 46, 45, 0.28));
+}
+
+.ticket-wrap.has-more::before,
+.ticket-wrap.has-more::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #f4f7f6;
+  border-radius: 6px;
+  transform: rotate(-2.2deg) translate(-10px, 10px);
+  z-index: -1;
+}
+
+.ticket-wrap.has-more::after { transform: rotate(1.6deg) translate(12px, 6px); background: #eef3f1; }
+
+.ticket {
+  padding: 30px 34px 52px;
+  background: var(--paper);
+  border-radius: 6px 6px 0 0;
+  font-variation-settings: "MONO" 1, "CASL" 0;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 24px 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 24px 100%;
+  animation: ticket-in 0.45s ease-out;
+}
+
+@keyframes ticket-in {
+  from { transform: translateY(-24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.ticket-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.ticket-station { margin: 2px 0 0; font-size: 18px; color: var(--ink-soft); }
+
+.ticket-items {
+  margin: 20px 0;
+  padding: 18px 0;
+  list-style: none;
+  border-top: 3px dashed var(--ink);
+  border-bottom: 3px dashed var(--ink);
+}
+
+.ticket-items li {
+  display: flex;
+  gap: 18px;
+  font-size: clamp(30px, 4.4vw, 44px);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.ticket-items .qty { min-width: 2.4ch; text-align: right; }
+
+.ticket-wait { margin: 0 0 22px; font-size: 18px; color: var(--ink-soft); }
+
+.ticket .btn-main { width: 100%; font-size: 24px; padding: 20px; font-variation-settings: "CASL" 1, "MONO" 0; }
+
+.ticket-hint { margin: 10px 0 0; text-align: center; font-size: 15px; color: var(--ink-soft); }
+
+.more-waiting { margin: 26px 0 0; font-weight: 700; }
+
+.empty {
+  max-width: 520px;
+  padding: 34px;
+  border: 3px dashed var(--steel);
+  border-radius: 22px;
+  color: var(--ink-soft);
+}
+
+.empty strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: 24px;
+  font-variation-settings: "CASL" 1;
+}
+
+/* pedidos do salão */
+.floor h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 800;
+  font-variation-settings: "CASL" 1;
+}
+
+.floor-list { margin: 0; padding: 0; list-style: none; }
+
+.floor-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  padding: 12px 14px 12px 16px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  border-left: 6px solid var(--steel);
+  border-radius: 4px 12px 12px 4px;
+}
+
+.floor-row .who { font-weight: 800; }
+.floor-row .time { font-weight: 700; text-align: right; }
+.floor-row .what { grid-column: 1 / -1; font-size: 15px; color: var(--ink-soft); }
+
+.floor-row.is-warn { border-left-color: var(--mustard); }
+.floor-row.is-warn .time { color: var(--warn); }
+.floor-row.is-late { border-left-color: var(--late); background: #fff; }
+.floor-row.is-late .time { color: var(--late); }
+.floor-row.is-done { opacity: 0.55; border-left-color: var(--ok); }
+.floor-row.is-refused { opacity: 0.55; border-left-color: var(--late); }
+
+.floor-empty { color: var(--ink-soft); }
+
+/* estoque */
+.stock-dialog {
+  width: min(560px, calc(100vw - 32px));
+  border: 0;
+  border-radius: 22px;
+  padding: 26px 28px;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.stock-dialog::backdrop { background: rgba(15, 46, 45, 0.45); }
+
+.stock-dialog h2 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  font-variation-settings: "CASL" 1;
+}
+
+.stock-dialog p { margin: 0 0 16px; color: var(--ink-soft); }
+
+.stock-list { margin: 0 0 22px; padding: 0; list-style: none; }
+
+.stock-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 2px dashed var(--formica-deep);
+}
+
+.stock-row .stepper input {
+  width: 64px;
+  height: 48px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  text-align: center;
+  font: inherit;
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.stock-row.is-changed .stepper input { background: #fdf0cf; }
+
+.stock-name { font-size: 20px; font-weight: 700; }
+.stock-low { display: block; font-size: 14px; color: var(--warn); font-weight: 600; }
+
+.dialog-actions { display: flex; justify-content: flex-end; gap: 12px; }
+
+/* aviso rápido */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  max-width: calc(100vw - 32px);
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 16px);
+  transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
+  z-index: 10;
+}
+
+.toast.is-on { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.mesa-body .toast { bottom: 110px; }
+
+/* ------------------------------------------------------------ início */
+.home {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+.home-links { display: grid; gap: 16px; margin-top: 24px; }
+
+.home-links a {
+  display: block;
+  padding: 24px 26px;
+  background: var(--paper);
+  border-radius: 22px;
+  color: inherit;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.home-links strong { display: block; font-size: 26px; font-variation-settings: "CASL" 1; }
+.home-links span { color: var(--ink-soft); }
+
+/* ---------------------------------------------------------- celular */
+@media (max-width: 860px) {
+  .bench { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 520px) {
+  body { font-size: 17px; }
+  .topbar { padding: 14px 16px; }
+  .brand { font-size: 19px; }
+  .clock { display: none; }
+  .mesa-main { padding: 0 16px 140px; }
+  .menu-row { grid-template-columns: 48px 1fr auto; gap: 12px; padding: 14px; }
+  .menu-icon { width: 48px; height: 48px; font-size: 26px; }
+  .menu-name { font-size: 20px; }
+  .stepper button { width: 42px; height: 42px; }
+  .ticket { padding: 24px 22px 46px; }
+  .bench { padding: 8px 16px 32px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
