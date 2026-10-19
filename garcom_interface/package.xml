@@ -2,8 +2,8 @@
 <package format="2">
   <name>garcom_interface</name>
   <version>0.1.0</version>
-  <description>Interface de pedidos das mesas</description>
-  <maintainer email="mariana@todo.com">Mariana</maintainer>
+  <description>Interface de pedidos das mesas e tela da estacao de coleta</description>
+  <maintainer email="ian@todo.com">Ian</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>

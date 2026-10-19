@@ -1,8 +1,8 @@
-# Guia da equipe: como começar e o que cada uma faz
+# Guia da equipe: como começar e o que cada um faz
 
 Este guia é para quem nunca mexeu com ROS, Linux ou Git. Siga na ordem.
 
-**Resumo:** o sistema inteiro já roda. Cada parte do robô é um programa separado (um "nó"), e as partes da Ana e da Mariana já existem como **esqueletos** que só fingem funcionar. O trabalho de cada uma é **trocar o "fingir" pelo de verdade**, sem mudar os nomes dos canais de comunicação.
+**Resumo:** o sistema inteiro já roda. Cada parte do robô é um programa separado (um "nó"). Só a **navegação** ainda é um esqueleto que finge a viagem; o trabalho da Ana é trocar o "fingir" pelo robô andando de verdade, sem mudar os nomes dos canais de comunicação.
 
 ---
 
@@ -19,21 +19,23 @@ Este guia é para quem nunca mexeu com ROS, Linux ou Git. Siga na ordem.
 
 ## 2. Como um pedido anda pelo sistema
 
-1. A **interface** (Mariana) publica o pedido em `/garcom/orders`.
-2. A **fila** (Ian) pergunta ao **estoque** (Mariana) se tem os itens. Se faltar algum, recusa o pedido.
+1. Na **tela da mesa**, a pessoa escolhe a mesa e os itens. O pedido sai em `/garcom/orders`.
+2. A **fila** pede ao **estoque** para reservar os itens. Se faltar algum, o pedido é recusado.
 3. A fila controla o **prazo máximo de entrega**: avisa quando o pedido passa de 70% do prazo e marca como atrasado se passar do prazo.
-4. O **gerente de missões** (Ian) pega o pedido mais urgente e manda a **navegação** (Ana) ir até a estação de cada item.
-5. Ao chegar, a **percepção** (Mariana) lê o marcador ArUco da estação e confirma em `/garcom/station_detected`.
+4. O **gerente de missões** pega o pedido mais urgente, separa os itens por estação e manda a **navegação** ir até cada estação.
+5. Na estação, a **tela da estação** mostra o que colocar na bandeja ("2 x Café, 1 x Suco"). A pessoa monta e confirma.
 6. O gerente manda a navegação ir até a mesa e depois voltar para a base. Cada mudança de estado do pedido sai em `/garcom/order_status`.
 
 | Nó | Responsável | Hoje |
 | --- | --- | --- |
-| `order_queue` (fila e prazos) | Ian | **Real** |
-| `mission_manager` (missões) | Ian | **Real** |
-| `navigation` | Ana | Esqueleto: finge a viagem em 3 s |
-| `perception` | Mariana | Esqueleto: finge que leu o ArUco |
-| `interface` | Mariana | Esqueleto: gera pedidos aleatórios |
-| `stock_server` | Mariana | Funciona com o `estoque.yaml`; falta dar baixa a cada entrega |
+| `order_queue` (fila e prazos) | Ian | Pronto |
+| `mission_manager` (missões) | Ian | Pronto |
+| `stock_server` (estoque) | Ian | Pronto |
+| `interface` (tela da mesa) | Ian | Pronto no terminal; versão web depois |
+| `station_panel` (tela da estação) | Ian | Pronto no terminal; versão web depois |
+| `navigation` | Ana | **Esqueleto:** finge a viagem em 3 s |
+
+A leitura de marcadores ArUco foi retirada do projeto, com o aval do professor, depois que a Mariana saiu da disciplina. A tela da estação ocupa esse lugar.
 
 ---
 
@@ -65,7 +67,7 @@ mkdir -p ~/catkin_ws/src && cd ~/catkin_ws/src && git clone https://github.com/i
 
 No final do `catkin_make` tem que aparecer `[100%]`, sem erro em vermelho.
 
-**Para pegar as atualizações dos outros** (faça sempre antes de começar a mexer):
+**Para pegar as atualizações** (faça sempre antes de começar a mexer):
 
 ```bash
 cd ~/catkin_ws/src/robo-garcom && git stash && git pull && cd ~/catkin_ws && catkin_make
@@ -79,23 +81,26 @@ roslaunch garcom_bringup sim.launch
 
 Os pedidos começam a aparecer no terminal. Para ver o "organograma" dos nós, abra **outro terminal** do Ubuntu e rode `rqt_graph`. Para parar, aperte **Ctrl+C**.
 
-Para ver os alertas de prazo funcionando (prazo de 30 s e pedidos a cada 5 s):
+Outros jeitos de rodar:
 
-```bash
-roslaunch garcom_bringup sim.launch deadline_s:=30 order_period_s:=5
-```
+| Para... | Rode |
+| --- | --- |
+| Ver os alertas de prazo | `roslaunch garcom_bringup sim.launch deadline_s:=30 order_period_s:=5` |
+| Fazer os pedidos você mesmo | `roslaunch garcom_bringup sim.launch auto_orders:=false` e, em outro terminal, `rosrun garcom_interface interface_node.py` |
+| Confirmar a coleta você mesmo | `roslaunch garcom_bringup sim.launch auto_pickup:=false` e, em outro terminal, `rosrun garcom_interface station_panel.py` |
+| Repor um item | `rosservice call /garcom/restock "{item: 'rosquinha', quantity: 5}"` |
+
+O cardápio (itens, estação de cada item e estoque inicial) fica em `garcom_stock/config/cardapio.yaml`.
 
 ---
 
-## 6. A sua parte
-
-A regra é uma só: **troque o que é simulado pelo de verdade, mas mantenha os mesmos nomes de tópicos, serviços e ações.** Assim o resto do sistema continua funcionando sem ninguém precisar mexer no código do outro. Os arquivos têm comentários `TODO` mostrando onde mexer.
-
-### Ana: simulação e navegação
+## 6. Parte da Ana: simulação e navegação
 
 **Arquivos:** `garcom_simulation/` (mundo e robô no Gazebo) e `garcom_navigation/scripts/navigation_node.py`.
 
-**O que o seu nó precisa fazer (o "contrato"):**
+A regra é uma só: **troque o "finge a viagem" pelo robô andando de verdade, mas mantenha os mesmos nomes de tópicos e ações.** Assim o resto do sistema continua funcionando sem ninguém mexer no código do outro. O arquivo tem um comentário `TODO` mostrando onde mexer.
+
+**O que o nó de navegação precisa fazer (o "contrato"):**
 
 | Recebe | Envia |
 | --- | --- |
@@ -106,41 +111,14 @@ A regra é uma só: **troque o que é simulado pelo de verdade, mas mantenha os 
 **Ordem sugerida, do mais fácil ao mais difícil.** Para a apresentação de 26/10, o mínimo é chegar ao passo 3:
 
 1. **P3-DX no Gazebo andando pelo teclado.** A aula 7 (`Gazebo.pdf`) traz o modelo do P3DX (`pioneer3dx.xacro` e `pioneer3dx.gazebo`, com laser e o plugin de tração diferencial). Teste com `rosrun teleop_twist_keyboard teleop_twist_keyboard.py` (instale com `sudo apt install ros-noetic-teleop-twist-keyboard`) ou com `rostopic pub /cmd_vel ...`, como na aula.
-2. **Restaurante no Gazebo:** paredes, a base, duas estações e quatro mesas (podem ser caixas simples). Salve em `garcom_simulation/worlds/` e crie um launch em `garcom_simulation/launch/` que abre o mundo com o robô.
-3. **Ir até um ponto:** no `navigation_node.py`, troque o "finge 3 s" por um controle que lê a posição do robô em `/odom` e publica em `/cmd_vel` até chegar nas coordenadas do `pontos.yaml`. Depois atualize as coordenadas do `pontos.yaml` para o seu mundo.
+2. **Restaurante no Gazebo:** paredes, a base, duas estações e quatro mesas (podem ser caixas simples). Salve em `garcom_simulation/worlds/` e crie um launch em `garcom_simulation/launch/` que abre o mundo com o robô. O Ian vai ajudar nesta parte.
+3. **Ir até um ponto:** no `navigation_node.py`, troque o "finge 3 s" por um controle que lê a posição do robô em `/odom` e publica em `/cmd_vel` até chegar nas coordenadas do `pontos.yaml`. Depois atualize as coordenadas do `pontos.yaml` para o mundo do Gazebo.
 4. **Mapa e A\*:** gere o mapa com o `gmapping` e use o `move_base` com o planejador global em modo A\* (`global_planner` com `use_dijkstra: false`).
 
 **Testar sozinha:** com o seu launch rodando, mande o robô para um ponto:
 
 ```bash
 rostopic pub -1 /garcom/go_to_point/goal garcom_msgs/GoToPointActionGoal "goal: {point_name: 'mesa_2'}"
-```
-
-### Mariana: percepção, interface e estoque
-
-**Arquivos:** `garcom_perception/scripts/aruco_node.py`, `garcom_interface/scripts/interface_node.py` e `garcom_stock/`.
-
-**O que os seus nós precisam fazer (o "contrato"):**
-
-| Nó | Recebe | Envia |
-| --- | --- | --- |
-| `perception` | Imagem da câmera | `/garcom/station_detected` (texto com o nome da estação, ex.: `estacao_cafe`) |
-| `interface` | `/garcom/order_status` (para mostrar o andamento) | `/garcom/orders` (mensagem `Order`) |
-| `stock_server` | Serviço `/garcom/check_stock` | Responde `available` e a lista `missing` |
-
-**Ordem sugerida.** Para a apresentação de 26/10, o mínimo é chegar ao passo 3:
-
-1. **Marcadores ArUco:** gere e imprima dois marcadores do dicionário **4x4_50**, ID 0 (café) e ID 1 (croissant). A relação ID → estação já está em `garcom_perception/config/marcadores.yaml`.
-2. **Câmera no ROS:** `sudo apt install ros-noetic-usb-cam` e depois `rosrun usb_cam usb_cam_node _video_device:=/dev/video0`. A imagem sai em `/usb_cam/image_raw`. No WSL a webcam não aparece direto; dá para testar no PC do laboratório ou numa máquina virtual com a webcam liberada.
-3. **Detecção ArUco no `aruco_node.py`:** assinar `/usb_cam/image_raw`, converter a imagem com o `cv_bridge`, detectar com `cv2.aruco.detectMarkers` (dicionário `DICT_4X4_50`), converter o ID no nome da estação pelo `marcadores.yaml` e publicar em `/garcom/station_detected`.
-4. **Interface de verdade:** um modo em que a pessoa digita a mesa e os itens no terminal (`input()`) e o nó publica o `Order`. Mantenha o modo automático atual como opção, porque ele é usado nos testes. Depois pode virar uma página web.
-5. **Estoque:** dar baixa nos itens a cada pedido entregue (previsto para 16/11).
-
-**Testar sozinha:** rode o seu nó e, em outro terminal, veja o que ele publica:
-
-```bash
-rostopic echo /garcom/station_detected
-rostopic echo /garcom/orders
 ```
 
 ---
@@ -165,7 +143,7 @@ git pull --rebase
 git push
 ```
 
-Cada uma mexe só nos próprios arquivos, assim ninguém atrapalha o outro.
+Cada um mexe só nos próprios arquivos, assim ninguém atrapalha o outro.
 
 ---
 
@@ -179,4 +157,4 @@ Cada uma mexe só nos próprios arquivos, assim ninguém atrapalha o outro.
 | Ctrl+V não cola no terminal | Use o botão direito do mouse ou Ctrl+Shift+V |
 | "is neither a launch file in package" ou "package not found" | Rode `source ~/catkin_ws/devel/setup.bash` (ou abra um terminal novo) |
 | Nó Python não abre ("cannot launch node") | `chmod +x ~/catkin_ws/src/robo-garcom/*/scripts/*.py` |
-| Mudei uma mensagem em `garcom_msgs` e deu erro | Rode `catkin_make` de novo |
+| Erro com mensagens (`garcom_msgs`) depois de atualizar | Rode `catkin_make` de novo |

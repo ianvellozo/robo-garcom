@@ -3,7 +3,7 @@
   <name>garcom_stock</name>
   <version>0.1.0</version>
   <description>Gerenciamento de estoque do Robo Garcom</description>
-  <maintainer email="mariana@todo.com">Mariana</maintainer>
+  <maintainer email="ian@todo.com">Ian</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>

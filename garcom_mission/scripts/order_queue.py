@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Fila de pedidos (responsável: Ian) - versão 19/10.
 
-- Recebe pedidos em /garcom/orders e consulta o estoque (/garcom/check_stock).
+- Recebe pedidos em /garcom/orders e reserva os itens no estoque (/garcom/check_stock).
+  Se faltar algum item, o pedido é recusado e nada é reservado.
 - Controla o prazo máximo de entrega de cada pedido (cronômetro por pedido):
     * alerta: o pedido passou de 70% do prazo (parâmetro /garcom/warning_ratio);
     * atrasado: o pedido passou do prazo (parâmetro /garcom/deadline_s).
@@ -90,7 +91,7 @@ class OrderQueue:
         self.status_pub.publish(self.new_status(order, OrderStatus.RECEBIDO))
 
         try:
-            resp = self.check_stock(order.items)
+            resp = self.check_stock(items=order.items, reserve=True)  # reserva os itens
         except rospy.ServiceException as err:
             rospy.logerr("Falha ao consultar o estoque: %s", err)
             return

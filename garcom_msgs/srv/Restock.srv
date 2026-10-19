@@ -1,0 +1,7 @@
+# Repoe um item no estoque
+string item
+int32 quantity
+---
+bool success
+int32 total          # quantidade depois da reposicao
+string message

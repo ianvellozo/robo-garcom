@@ -10,11 +10,15 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(FILES
   Order.msg
   OrderStatus.msg
+  PickupRequest.msg
+  PickupDone.msg
+  StockLevels.msg
 )
 
 add_service_files(FILES
   CheckStock.srv
   NextOrder.srv
+  Restock.srv
 )
 
 add_action_files(FILES

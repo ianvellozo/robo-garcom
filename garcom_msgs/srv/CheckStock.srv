@@ -1,5 +1,7 @@
-# Verifica se ha estoque para todos os itens de um pedido
+# Verifica se ha estoque para todos os itens de um pedido.
+# Com reserve = true e estoque suficiente, ja da baixa nos itens (reserva para o pedido).
 string[] items
+bool reserve
 ---
 bool available
-string[] missing     # itens sem estoque
+string[] missing     # itens sem estoque suficiente

@@ -1,0 +1,16 @@
+# Cardapio do restaurante, carregado em /garcom pelo sim.launch.
+# Todos os nos leem daqui: a interface (o que mostrar), o estoque (quanto tem)
+# e a missao (em qual estacao pegar cada item).
+#
+#   item:    codigo usado nas mensagens (sem acento e sem espaco)
+#   nome:    como aparece nas telas
+#   estacao: ponto do pontos.yaml onde o robo pega o item
+#   estoque: quantidade inicial
+cardapio:
+  - {item: cafe,      nome: "Café",      estacao: estacao_cafe,      estoque: 10}
+  - {item: suco,      nome: "Suco",      estacao: estacao_cafe,      estoque: 6}
+  - {item: croissant, nome: "Croissant", estacao: estacao_croissant, estoque: 5}
+  - {item: rosquinha, nome: "Rosquinha", estacao: estacao_croissant, estoque: 0}
+
+# Avisa quando um item chega nesta quantidade ou menos
+estoque_baixo: 2

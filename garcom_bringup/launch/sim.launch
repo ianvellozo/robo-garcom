@@ -1,34 +1,41 @@
 <?xml version="1.0"?>
 <!--
   Sistema completo do Robo Garcom - versao 19/10.
-  Navegacao, percepcao e interface ainda sao nos-esqueleto (simulados).
+  A navegacao ainda e simulada (finge a viagem); o resto ja e o sistema real.
 
-  Uso normal:
+  Demonstracao automatica (pedidos aleatorios e coleta confirmada sozinha):
     roslaunch garcom_bringup sim.launch
   Demonstracao dos alertas de prazo (prazo curto e pedidos mais frequentes):
     roslaunch garcom_bringup sim.launch deadline_s:=30 order_period_s:=5
+  Voce fazendo os pedidos e confirmando a coleta:
+    roslaunch garcom_bringup sim.launch auto_orders:=false auto_pickup:=false
+    (outro terminal) rosrun garcom_interface interface_node.py
+    (outro terminal) rosrun garcom_interface station_panel.py
 -->
 <launch>
   <!-- Prazo maximo de entrega de cada pedido (s) -->
   <arg name="deadline_s" default="600"/>
-  <!-- Intervalo entre os pedidos de teste da interface simulada (s) -->
+  <!-- true: a interface gera pedidos aleatorios; false: voce faz os pedidos com o interface_node.py -->
+  <arg name="auto_orders" default="true"/>
+  <!-- Intervalo entre os pedidos aleatorios (s) -->
   <arg name="order_period_s" default="20"/>
+  <!-- true: a coleta e confirmada sozinha; false: voce confirma com o station_panel.py -->
+  <arg name="auto_pickup" default="true"/>
   <!-- Topico de velocidade: /cmd_vel no Gazebo, /RosAria/cmd_vel no P3-DX real -->
   <arg name="cmd_vel_topic" default="/cmd_vel"/>
 
-  <!-- Parametros compartilhados por todos os nos: /garcom/deadline_s e /garcom/warning_ratio -->
+  <!-- Parametros compartilhados por todos os nos (namespace /garcom) -->
   <param name="garcom/deadline_s" value="$(arg deadline_s)"/>
   <rosparam command="load" ns="garcom" file="$(find garcom_mission)/config/prazos.yaml"/>
+  <rosparam command="load" ns="garcom" file="$(find garcom_stock)/config/cardapio.yaml"/>
 
-  <!-- Estoque (Mariana) -->
-  <node pkg="garcom_stock" type="stock_server.py" name="stock_server" output="screen">
-    <rosparam command="load" file="$(find garcom_stock)/config/estoque.yaml"/>
-  </node>
+  <!-- Estoque (Ian) -->
+  <node pkg="garcom_stock" type="stock_server.py" name="stock_server" output="screen"/>
 
   <!-- Fila de pedidos e missoes (Ian) -->
   <node pkg="garcom_mission" type="order_queue.py" name="order_queue" output="screen"/>
   <node pkg="garcom_mission" type="mission_manager.py" name="mission_manager" output="screen">
-    <rosparam command="load" file="$(find garcom_mission)/config/estacoes.yaml"/>
+    <rosparam command="load" file="$(find garcom_mission)/config/missao.yaml"/>
   </node>
 
   <!-- Navegacao (Ana) -->
@@ -37,13 +44,15 @@
     <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
   </node>
 
-  <!-- Percepcao (Mariana) -->
-  <node pkg="garcom_perception" type="aruco_node.py" name="perception" output="screen">
-    <rosparam command="load" file="$(find garcom_perception)/config/marcadores.yaml"/>
+  <!-- Tela da estacao de coleta (Ian), em modo automatico -->
+  <node if="$(arg auto_pickup)" pkg="garcom_interface" type="station_panel.py" name="station_panel" output="screen">
+    <param name="mode" value="auto"/>
+    <param name="auto_delay_s" value="2.0"/>
   </node>
 
-  <!-- Interface de pedidos (Mariana) -->
-  <node pkg="garcom_interface" type="interface_node.py" name="interface" output="screen">
+  <!-- Interface de pedidos das mesas (Ian), em modo automatico -->
+  <node if="$(arg auto_orders)" pkg="garcom_interface" type="interface_node.py" name="interface" output="screen">
+    <param name="mode" value="auto"/>
     <param name="period_s" value="$(arg order_period_s)"/>
   </node>
 </launch>

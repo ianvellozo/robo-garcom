@@ -1,5 +1,0 @@
-# ID de cada marcador ArUco e a estacao em que ele fica.
-# TODO(Mariana): conferir os IDs dos marcadores impressos.
-markers:
-  - {id: 0, station: estacao_cafe}
-  - {id: 1, station: estacao_croissant}

@@ -1,0 +1,6 @@
+# Ponto onde o robo espera entre os pedidos
+base: base
+
+# Tempo maximo esperando a confirmacao da coleta na estacao (s).
+# Se ninguem confirmar, a missao segue mesmo assim e registra um aviso.
+pickup_timeout_s: 60.0

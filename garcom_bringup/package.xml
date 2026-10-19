@@ -9,7 +9,6 @@
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>garcom_mission</exec_depend>
   <exec_depend>garcom_navigation</exec_depend>
-  <exec_depend>garcom_perception</exec_depend>
   <exec_depend>garcom_interface</exec_depend>
   <exec_depend>garcom_stock</exec_depend>
 </package>
