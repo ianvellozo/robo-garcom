@@ -2,8 +2,9 @@
 
 const $ = (id) => document.getElementById(id);
 
+// a mesa é escolhida sempre na primeira tela (ou vem no endereço: /mesa?mesa=7)
 const params = new URLSearchParams(location.search);
-let mesa = parseInt(params.get("mesa") || readStore("mesa") || "0", 10) || null;
+let mesa = parseInt(params.get("mesa") || "0", 10) || null;
 let cart = {};            // item -> quantidade
 let trackingId = null;    // pedido que está sendo acompanhado
 let state = null;
@@ -19,11 +20,11 @@ function show(view) {
   $("menuView").hidden = view !== "menu";
   $("trackView").hidden = view !== "track";
   $("cartBar").hidden = view !== "menu";
-  $("tableChip").hidden = !mesa;
   if (mesa) {
-    $("tableChip").textContent = `Mesa ${mesa}`;
+    $("menuGreeting").textContent = `Mesa ${mesa}, o que vai ser hoje?`;
     $("routeTable").textContent = `Mesa ${mesa}`;
   }
+  window.scrollTo(0, 0);
 }
 
 function currentView() {
@@ -34,24 +35,56 @@ function currentView() {
 
 function setTable(n) {
   mesa = n;
-  writeStore("mesa", String(n));
+  cart = {};
   const url = new URL(location.href);
   url.searchParams.set("mesa", n);
   history.replaceState(null, "", url);
   show("menu");
 }
 
-function buildTablePicker(count) {
-  const grid = $("tableGrid");
-  if (grid.childElementCount === count) return;
-  grid.innerHTML = "";
-  for (let n = 1; n <= count; n++) {
-    const b = document.createElement("button");
-    b.textContent = `Mesa ${n}`;
-    b.addEventListener("click", () => setTable(n));
-    grid.appendChild(b);
-  }
+// planta do salão desenhada com as coordenadas do pontos.yaml.
+// No celular a planta é girada (fica em pé) para as mesas não ficarem apertadas.
+const narrow = window.matchMedia("(max-width: 560px)");
+let lastPlanta = null;
+
+function buildFloorPlan(planta, force) {
+  const plan = $("floorPlan");
+  if (plan.childElementCount && !force) return;
+  plan.innerHTML = "";
+  lastPlanta = planta;
+  const upright = narrow.matches;
+  const xs = planta.map((p) => p.x);
+  const ys = planta.map((p) => p.y);
+  const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const pad = 9;  // margem em %
+  const across = (x) => pad + ((x - minX) / (maxX - minX || 1)) * (100 - 2 * pad);
+  const down = (y) => pad + ((maxY - y) / (maxY - minY || 1)) * (100 - 2 * pad);
+  const left = (p) => (upright ? down(p.y) : across(p.x));
+  const top = (p) => (upright ? across(p.x) : down(p.y));
+  const ratio = (maxX - minX + 2.5) / (maxY - minY + 2.5);
+  plan.style.aspectRatio = `${upright ? 1 / ratio : ratio}`;
+
+  planta.slice().sort((a, b) => a.ponto.localeCompare(b.ponto, "pt", { numeric: true })).forEach((p) => {
+    let el;
+    if (p.tipo === "mesa") {
+      el = document.createElement("button");
+      el.className = "plan-table";
+      el.textContent = p.nome.replace("Mesa ", "");
+      el.setAttribute("aria-label", p.nome);
+      el.addEventListener("click", () => setTable(parseInt(p.ponto.split("_")[1], 10)));
+    } else {
+      el = document.createElement("span");
+      el.className = p.tipo === "base" ? "plan-base" : "plan-station";
+      el.innerHTML = p.tipo === "base" ? ROBOT_SVG : p.nome.replace(/^Bancada d[aeo]s? /i, "");
+      el.setAttribute("aria-hidden", "true");
+    }
+    el.style.left = `${left(p)}%`;
+    el.style.top = `${top(p)}%`;
+    plan.appendChild(el);
+  });
 }
+
+narrow.addEventListener("change", () => { if (lastPlanta) buildFloorPlan(lastPlanta, true); });
 
 // ----------------------------------------------------------- cardápio
 function buildMenu(cardapio) {
@@ -145,8 +178,8 @@ $("orderBtn").addEventListener("click", async () => {
 
 // ------------------------------------------------------ acompanhamento
 const STAGES = {
-  recebido: { pos: 0, reached: 1, msg: "Pedido confirmado. O robô já vai buscar seus itens." },
-  validado: { pos: 0, reached: 1, msg: "Pedido confirmado. O robô já vai buscar seus itens." },
+  recebido: { pos: 0, reached: 1, msg: "Pedido confirmado. O robô vai buscar na próxima viagem." },
+  validado: { pos: 0, reached: 1, msg: "Pedido confirmado. O robô vai buscar na próxima viagem." },
   em_coleta: { pos: 50, reached: 2, msg: "O robô está na bancada pegando o seu pedido." },
   em_entrega: { pos: 82, reached: 2, msg: "O robô está indo até a sua mesa." },
   entregue: { pos: 100, reached: 3, msg: "Seu pedido chegou. Bom apetite!" },
@@ -174,8 +207,16 @@ function renderTrack() {
   const stage = STAGES[order.status] || STAGES.recebido;
   view.classList.toggle("is-refused", order.status === "recusado");
   $("route").hidden = order.status === "recusado";
-  $("trackMsg").textContent = stage.msg;
-  moveRobot(stage.pos, stage.reached);
+  let msg = stage.msg;
+  let pos = stage.pos;
+  if (order.status === "em_entrega" && order.paradas_antes > 0) {
+    pos = 66;
+    msg = order.paradas_antes === 1
+      ? "O robô está entregando em outra mesa. A sua é a próxima."
+      : `O robô está entregando em outras mesas. Faltam ${order.paradas_antes} paradas antes da sua.`;
+  }
+  $("trackMsg").textContent = msg;
+  moveRobot(pos, stage.reached);
 
   const done = order.status === "entregue";
   $("trackTime").innerHTML = order.status === "recusado" ? "" :
@@ -196,14 +237,14 @@ function moveRobot(pos, reached) {
 }
 
 $("newOrderBtn").addEventListener("click", () => { trackingId = null; show("menu"); renderMenu(); });
-$("tableChip").addEventListener("click", () => show("pick"));
+$("changeTable").addEventListener("click", () => { mesa = null; show("pick"); });
 
 // -------------------------------------------------------------- início
 let menuBuilt = false;
 poll((s) => {
   state = s;
   names = Object.fromEntries(s.cardapio.map((m) => [m.item, m.nome]));
-  buildTablePicker(s.mesas);
+  buildFloorPlan(s.planta);
   if (!menuBuilt) {
     buildMenu(s.cardapio);
     menuBuilt = true;

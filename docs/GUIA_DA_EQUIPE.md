@@ -22,9 +22,9 @@ Este guia é para quem nunca mexeu com ROS, Linux ou Git. Siga na ordem.
 1. Na **tela da mesa** (no navegador), o cliente escolhe os itens. O pedido sai em `/garcom/orders`.
 2. A **fila** pede ao **estoque** para reservar os itens. Se faltar algum, o pedido é recusado.
 3. A fila controla o **prazo máximo de entrega**: avisa quando o pedido passa de 70% do prazo e marca como atrasado se passar do prazo.
-4. O **gerente de missões** pega o pedido mais urgente, separa os itens por estação e manda a **navegação** ir até cada estação.
-5. Na estação, a **tela da bancada** mostra o que colocar na bandeja ("2 × Café, 1 × Suco"). O funcionário monta e aperta **Bandeja pronta**.
-6. O gerente manda a navegação ir até a mesa e depois voltar para a base. Cada mudança de estado do pedido sai em `/garcom/order_status`.
+4. O **gerente de missões** monta uma **viagem**: pega os pedidos mais urgentes que cabem na bandeja (até 8 itens e 5 mesas), soma os itens por bancada e escolhe a melhor ordem de paradas, equilibrando a mesa mais perto e o pedido mais atrasado.
+5. Em cada bancada, a **tela da bancada** mostra o total ("2 × Café, 3 × Suco") e como separar por mesa. O funcionário monta e aperta **Bandeja pronta**.
+6. O robô entrega mesa por mesa. Se tiver mais pedidos esperando, já sai para a próxima viagem; se não, volta para a base. Cada mudança de estado do pedido sai em `/garcom/order_status`.
 
 | Nó | Responsável | Hoje |
 | --- | --- | --- |
@@ -33,7 +33,7 @@ Este guia é para quem nunca mexeu com ROS, Linux ou Git. Siga na ordem.
 | `stock_server` (estoque) | Ian | Pronto |
 | `web_server` (telas da mesa e da bancada no navegador) | Ian | Pronto |
 | `interface` e `station_panel` (as mesmas telas no terminal) | Ian | Pronto |
-| `navigation` | Ana | **Esqueleto:** finge a viagem em 3 s |
+| `navigation` | Ana | **Esqueleto:** finge a viagem (tempo = distância ÷ velocidade) |
 
 A leitura de marcadores ArUco foi retirada do projeto, com o aval do professor, depois que a Mariana saiu da disciplina. A tela da estação ocupa esse lugar.
 
@@ -85,7 +85,7 @@ Outros jeitos de rodar:
 
 | Para... | Rode |
 | --- | --- |
-| Usar as telas no navegador | `roslaunch garcom_bringup sim.launch auto_orders:=false auto_pickup:=false` e abra http://localhost:8080/mesa?mesa=2 e http://localhost:8080/bancada |
+| Usar as telas no navegador | `roslaunch garcom_bringup sim.launch auto_orders:=false auto_pickup:=false` e abra http://localhost:8080/mesa e http://localhost:8080/bancada |
 | Ver os alertas de prazo | `roslaunch garcom_bringup sim.launch deadline_s:=30 order_period_s:=5` |
 | Fazer os pedidos você mesmo | `roslaunch garcom_bringup sim.launch auto_orders:=false` e, em outro terminal, `rosrun garcom_interface interface_node.py` |
 | Confirmar a coleta você mesmo | `roslaunch garcom_bringup sim.launch auto_pickup:=false` e, em outro terminal, `rosrun garcom_interface station_panel.py` |

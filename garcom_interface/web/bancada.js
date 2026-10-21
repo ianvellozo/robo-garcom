@@ -12,9 +12,9 @@ $("brandMark").innerHTML = ROBOT_SVG;
 
 const FLOOR_STATUS = {
   recebido: "Recebido",
-  validado: "Na fila do robô",
+  validado: "Esperando a próxima viagem",
   em_coleta: "Robô na bancada",
-  em_entrega: "Indo para a mesa",
+  em_entrega: "Robô indo para esta mesa",
   entregue: "Entregue",
   recusado: "Recusado (faltou item)",
 };
@@ -24,7 +24,7 @@ function pendingPickups() {
   return state.coletas.filter((c) => (!station || c.estacao === station) && !confirming.has(keyOf(c)));
 }
 
-const keyOf = (c) => `${c.pedido}:${c.estacao}`;
+const keyOf = (c) => `${c.viagem}:${c.estacao}`;
 
 function renderTickets() {
   const area = $("ticketArea");
@@ -44,20 +44,27 @@ function renderTickets() {
   const key = `${keyOf(c)}|${list.length}`;
   if (key !== shownTicket) {
     const more = list.length - 1;
+    const tables = [...new Set(c.linhas.map((l) => l.mesa))];
+    const lines = c.linhas.length > 1 ? `
+          <p class="ticket-split-title">Separe na bandeja:</p>
+          <ul class="ticket-split">
+            ${c.linhas.map((l) => `<li><span>Mesa ${l.mesa}</span><span>${l.itens.map((i) => `${i.qtd} × ${names[i.item] || i.item}`).join(", ")}</span></li>`).join("")}
+          </ul>` : "";
     area.innerHTML = `
       <div class="ticket-wrap ${more ? "has-more" : ""}">
         <article class="ticket">
-          <div class="ticket-head"><span>Pedido ${c.pedido}</span><span>Mesa ${c.mesa}</span></div>
+          <div class="ticket-head"><span>Viagem ${c.viagem}</span><span>${tables.length === 1 ? `Mesa ${tables[0]}` : `${tables.length} mesas`}</span></div>
           <p class="ticket-station">${c.estacao_nome}</p>
           <ul class="ticket-items">
             ${c.itens.map((i) => `<li><span class="qty">${i.qtd}</span><span>× ${names[i.item] || i.item}</span></li>`).join("")}
           </ul>
+          ${lines}
           <p class="ticket-wait" id="ticketWait"></p>
           <button class="btn-main" id="readyBtn">Bandeja pronta</button>
           <p class="ticket-hint">ou aperte Enter</p>
         </article>
       </div>
-      ${more ? `<p class="more-waiting">${more === 1 ? "Mais 1 robô esperando" : `Mais ${more} robôs esperando`}</p>` : ""}`;
+      ${more ? `<p class="more-waiting">${more === 1 ? "Mais 1 bandeja para montar" : `Mais ${more} bandejas para montar`}</p>` : ""}`;
     $("readyBtn").addEventListener("click", () => confirmPickup(c));
     shownTicket = key;
   }
@@ -71,8 +78,8 @@ async function confirmPickup(c) {
   shownTicket = "";
   renderTickets();
   try {
-    await api.post("/api/bandeja_pronta", { pedido: c.pedido, estacao: c.estacao });
-    toast(`Bandeja do pedido ${c.pedido} liberada`);
+    await api.post("/api/bandeja_pronta", { viagem: c.viagem, estacao: c.estacao });
+    toast(`Bandeja da viagem ${c.viagem} liberada`);
   } catch (e) {
     toast(e.message);
   } finally {
@@ -86,6 +93,31 @@ document.addEventListener("keydown", (ev) => {
   const list = state ? pendingPickups() : [];
   if (list.length) confirmPickup(list[0]);
 });
+
+function floorStatus(o) {
+  if (o.status === "em_entrega" && o.paradas_antes > 0) {
+    return `Na bandeja, ${o.paradas_antes === 1 ? "1 mesa" : `${o.paradas_antes} mesas`} antes desta`;
+  }
+  if (o.status === "em_coleta" && o.viagem) return `Viagem ${o.viagem}, robô nas bancadas`;
+  return FLOOR_STATUS[o.status] || o.status;
+}
+
+// ----------------------------------------------------------- viagem
+function renderTrip() {
+  const t = state.viagem;
+  const panel = $("tripPanel");
+  if (!t || t.terminou) {
+    const waiting = state.pedidos.some((o) => o.status === "validado");
+    panel.innerHTML = `<h2>Robô</h2><p class="trip-idle">${waiting ? "Juntando os pedidos para a próxima viagem." : "Na base, esperando pedidos."}</p>`;
+    return;
+  }
+  panel.innerHTML = `
+    <h2>Viagem ${t.id}</h2>
+    <p class="trip-meta">${t.pedidos.length === 1 ? "1 pedido" : `${t.pedidos.length} pedidos`}, cerca de ${clockText(t.estimado_s)}</p>
+    <ol class="trip-stops">
+      ${t.paradas.map((p, i) => `<li class="${i < t.atual ? "is-past" : i === t.atual ? "is-now" : ""}">${p.nome}</li>`).join("")}
+    </ol>`;
+}
 
 // ------------------------------------------------------ pedidos do salão
 function renderFloor() {
@@ -110,7 +142,7 @@ function renderFloor() {
       <li class="floor-row ${cls}">
         <span class="who">Mesa ${o.mesa}, pedido ${o.id}</span>
         <span class="time">${time}</span>
-        <span class="what">${FLOOR_STATUS[o.status] || o.status}: ${itemsText(o.itens, names)}</span>
+        <span class="what">${floorStatus(o)}: ${itemsText(o.itens, names)}</span>
       </li>`;
   }).join("");
 }
@@ -180,5 +212,6 @@ poll((s) => {
   names = Object.fromEntries(s.cardapio.map((m) => [m.item, m.nome]));
   if (station) $("benchTitle").textContent = s.estacoes[station] || "Bancada";
   renderTickets();
+  renderTrip();
   renderFloor();
 });

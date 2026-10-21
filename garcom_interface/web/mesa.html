@@ -9,26 +9,27 @@
 <body class="mesa-body">
   <header class="topbar">
     <h1 class="brand"><span id="brandMark"></span>Robô Garçom</h1>
-    <button class="chip" id="tableChip" hidden>Mesa 1</button>
   </header>
 
   <p class="offline" id="offline" role="alert" hidden>Sem conexão com o robô. Confira se o sistema está rodando.</p>
 
   <main class="mesa-main">
-    <!-- escolher a mesa -->
+    <!-- 1. escolher a mesa na planta do salão -->
     <section id="pickView" hidden>
-      <h2 class="greeting">Em qual mesa você está?</h2>
-      <div class="table-grid" id="tableGrid"></div>
+      <h2 class="greeting">Bem-vindo!</h2>
+      <p class="lead">Toque na sua mesa para ver o cardápio.</p>
+      <div class="floor-plan" id="floorPlan" role="group" aria-label="Planta do salão"></div>
     </section>
 
-    <!-- cardápio -->
+    <!-- 2. cardápio -->
     <section id="menuView" hidden>
-      <h2 class="greeting">O que vai ser hoje?</h2>
+      <h2 class="greeting" id="menuGreeting">O que vai ser hoje?</h2>
+      <button class="link-quiet" id="changeTable">Não é a sua mesa? Trocar</button>
       <button class="track-link" id="trackLink" hidden></button>
       <ul class="menu-sheet" id="menuList"></ul>
     </section>
 
-    <!-- acompanhamento do pedido -->
+    <!-- 3. acompanhamento do pedido -->
     <section class="track" id="trackView" hidden>
       <h2 id="trackTitle">Pedido</h2>
       <p class="track-msg" id="trackMsg" aria-live="polite"></p>

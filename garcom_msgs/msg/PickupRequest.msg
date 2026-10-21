@@ -1,7 +1,7 @@
 # Robo chegou numa estacao de coleta (publicado pela missao em /garcom/pickup_request).
-# A tela da estacao mostra o que colocar na bandeja.
-uint32 order_id
-uint8 table_id
+# A tela da bancada mostra o total desta estacao e a divisao por mesa.
+uint32 trip_id
 string station
-string[] items        # itens desta estacao (ex.: cafe, suco)
-uint32[] quantities   # quantidade de cada item, na mesma ordem
+string[] items        # total de cada item nesta estacao (todos os pedidos da viagem)
+uint32[] quantities   # na mesma ordem de items
+PickupLine[] lines    # o mesmo total, separado por pedido/mesa

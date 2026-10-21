@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Fila de pedidos (responsável: Ian) - versão 19/10.
+"""Fila de pedidos (responsável: Ian) - versão 21/10.
 
 - Recebe pedidos em /garcom/orders e reserva os itens no estoque (/garcom/check_stock).
   Se faltar algum item, o pedido é recusado e nada é reservado.
 - Controla o prazo máximo de entrega de cada pedido (cronômetro por pedido):
     * alerta: o pedido passou de 70% do prazo (parâmetro /garcom/warning_ratio);
     * atrasado: o pedido passou do prazo (parâmetro /garcom/deadline_s).
-- Entrega ao gerenciador de missões (/garcom/next_order) o pedido com MENOS
-  tempo restante. Como todos têm o mesmo prazo, hoje isso é a ordem de chegada;
-  quando cada item tiver o seu prazo (09/11), um pedido urgente passa à frente.
+- Entrega ao gerenciador de missões (/garcom/next_orders) os pedidos de uma
+  viagem: os mais urgentes (menos tempo restante) primeiro, até encher a bandeja.
 - Publica o estado de cada pedido em /garcom/order_status.
 - Registra as métricas de entrega: tempo médio e % de pedidos no prazo.
 """
@@ -17,7 +16,7 @@ import threading
 
 import rospy
 from garcom_msgs.msg import Order, OrderStatus
-from garcom_msgs.srv import CheckStock, NextOrder, NextOrderResponse
+from garcom_msgs.srv import CheckStock, NextOrders, NextOrdersResponse
 
 
 class OrderQueue:
@@ -37,7 +36,7 @@ class OrderQueue:
         rospy.wait_for_service("/garcom/check_stock")
         self.check_stock = rospy.ServiceProxy("/garcom/check_stock", CheckStock)
 
-        rospy.Service("/garcom/next_order", NextOrder, self.on_next_order)
+        rospy.Service("/garcom/next_orders", NextOrders, self.on_next_orders)
         rospy.Subscriber("/garcom/orders", Order, self.on_order)
         rospy.Subscriber("/garcom/order_status", OrderStatus, self.on_status)
         rospy.Timer(rospy.Duration(1.0), self.check_deadlines)
@@ -131,15 +130,28 @@ class OrderQueue:
         rospy.loginfo("Pedido %d entregue em %.1f s (%s). Métricas: %d entregue(s), média %.1f s, %.0f%% no prazo",
                       msg.id, total, "no prazo" if on_time else "ATRASADO", n, avg, pct)
 
-    def on_next_order(self, _req):
+    def on_next_orders(self, req):
+        """Separa os pedidos de uma viagem: os mais urgentes primeiro, até encher a bandeja."""
         with self.lock:
-            if not self.waiting:
-                return NextOrderResponse(has_order=False)
-            # menor tempo restante primeiro
-            best = min(self.waiting, key=lambda oid: self.remaining(self.active[oid]))
-            self.waiting.remove(best)
-            order = copy.deepcopy(self.active[best])
-        return NextOrderResponse(has_order=True, order=order)
+            waiting = len(self.waiting)
+            if not req.take or not self.waiting:
+                return NextOrdersResponse(orders=[], waiting=waiting)
+            urgent_first = sorted(self.waiting, key=lambda oid: self.remaining(self.active[oid]))
+            chosen, items, tables = [], 0, set()
+            for oid in urgent_first:
+                order = self.active[oid]
+                size = len(order.items)
+                new_table = order.table_id not in tables
+                if chosen and (items + size > req.max_items or
+                               (new_table and len(tables) >= req.max_tables)):
+                    continue  # não cabe nesta viagem; tenta o próximo
+                chosen.append(oid)
+                items += size
+                tables.add(order.table_id)
+            for oid in chosen:
+                self.waiting.remove(oid)
+            orders = [copy.deepcopy(self.active[oid]) for oid in chosen]
+        return NextOrdersResponse(orders=orders, waiting=waiting)
 
 
 def main():

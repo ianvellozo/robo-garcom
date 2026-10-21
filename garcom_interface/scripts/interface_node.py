@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Interface de pedidos das mesas (responsável: Ian) - versão 19/10.
+"""Interface de pedidos das mesas no terminal (responsável: Ian) - versão 21/10.
 
 Dois modos (parâmetro ~mode):
 - manual (padrão): a pessoa escolhe a mesa e os itens no terminal.
@@ -34,7 +34,8 @@ class Interface:
         cardapio = rospy.get_param("/garcom/cardapio", [])
         self.menu = [entry["item"] for entry in cardapio]
         self.names = {entry["item"]: entry["nome"] for entry in cardapio}
-        self.tables = int(rospy.get_param("~tables", 4))
+        points = rospy.get_param("/garcom/points", {})
+        self.tables = sum(1 for name in points if name.startswith("mesa_")) or 4
         self.stock = {}
 
         self.pub = rospy.Publisher("/garcom/orders", Order, queue_size=10)

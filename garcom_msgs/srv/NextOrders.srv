@@ -1,0 +1,9 @@
+# Pede a fila os proximos pedidos para uma viagem do robo.
+# take = false: so consulta quantos pedidos estao esperando (nao tira nada da fila).
+# take = true: tira os pedidos mais urgentes que cabem em max_items e max_tables.
+uint32 max_items
+uint8 max_tables
+bool take
+---
+OrderStatus[] orders
+uint32 waiting       # pedidos esperando (antes de tirar)

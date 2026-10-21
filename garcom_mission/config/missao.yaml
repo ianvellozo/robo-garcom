@@ -1,6 +1,23 @@
-# Ponto onde o robo espera entre os pedidos
+# Ponto onde o robo espera entre as viagens
 base: base
 
-# Tempo maximo esperando a confirmacao da coleta na estacao (s).
+# Quantos itens cabem na bandeja (uma viagem leva pedidos ate esse total)
+bandeja_capacidade: 8
+
+# Quantas mesas no maximo por viagem
+max_mesas_por_viagem: 5
+
+# Quando chega o primeiro pedido com o robo parado, ele espera este tempo (s)
+# para juntar pedidos que cheguem logo em seguida na mesma viagem
+espera_para_agrupar_s: 4.0
+
+# Tempo para o cliente pegar o pedido em cada mesa (s)
+tempo_na_mesa_s: 2.0
+
+# Peso do atraso na escolha da rota: cada segundo de atraso previsto
+# "custa" este tanto de segundos de espera a mais
+peso_do_atraso: 3.0
+
+# Tempo maximo esperando a confirmacao da coleta na bancada (s).
 # Se ninguem confirmar, a missao segue mesmo assim e registra um aviso.
 pickup_timeout_s: 60.0

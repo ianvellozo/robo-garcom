@@ -1,13 +1,30 @@
 # Pontos nomeados do restaurante: posicao x, y (m) e orientacao yaw (rad) no mapa.
-# TODO(Ana): medir as coordenadas reais no mapa do Gazebo e do laboratorio.
+# Carregado em /garcom/points pelo sim.launch: a navegacao usa para ir aos pontos,
+# a missao usa para planejar a rota e a tela da mesa desenha a planta do salao.
+#
+# Planta (x para a direita, y para cima):
+#   bancadas e base a esquerda; 15 mesas em 3 fileiras de 5.
+#
+# TODO(Ana): ajustar as coordenadas ao mundo do Gazebo e depois ao mapa do laboratorio.
 points:
-  base:              {x: 0.0, y: 0.0, yaw: 0.0}
-  estacao_cafe:      {x: 3.0, y: 2.0, yaw: 1.57}
-  estacao_croissant: {x: 3.0, y: -2.0, yaw: -1.57}
-  mesa_1:            {x: 6.0, y: 2.0, yaw: 0.0}
-  mesa_2:            {x: 6.0, y: -2.0, yaw: 0.0}
-  mesa_3:            {x: 9.0, y: 2.0, yaw: 0.0}
-  mesa_4:            {x: 9.0, y: -2.0, yaw: 0.0}
+  base:              {x: 0.0, y: 0.0,  yaw: 0.0}
+  estacao_cafe:      {x: 1.0, y: 2.5,  yaw: 1.57}
+  estacao_croissant: {x: 1.0, y: -2.5, yaw: -1.57}
 
-# Tempo de cada viagem simulada (s) - usado apenas pelo no-esqueleto
-travel_time_s: 3.0
+  mesa_1:  {x: 3.5, y: 3.0,  yaw: 0.0}
+  mesa_2:  {x: 5.0, y: 3.0,  yaw: 0.0}
+  mesa_3:  {x: 6.5, y: 3.0,  yaw: 0.0}
+  mesa_4:  {x: 8.0, y: 3.0,  yaw: 0.0}
+  mesa_5:  {x: 9.5, y: 3.0,  yaw: 0.0}
+
+  mesa_6:  {x: 3.5, y: 0.0,  yaw: 0.0}
+  mesa_7:  {x: 5.0, y: 0.0,  yaw: 0.0}
+  mesa_8:  {x: 6.5, y: 0.0,  yaw: 0.0}
+  mesa_9:  {x: 8.0, y: 0.0,  yaw: 0.0}
+  mesa_10: {x: 9.5, y: 0.0,  yaw: 0.0}
+
+  mesa_11: {x: 3.5, y: -3.0, yaw: 0.0}
+  mesa_12: {x: 5.0, y: -3.0, yaw: 0.0}
+  mesa_13: {x: 6.5, y: -3.0, yaw: 0.0}
+  mesa_14: {x: 8.0, y: -3.0, yaw: 0.0}
+  mesa_15: {x: 9.5, y: -3.0, yaw: 0.0}

@@ -76,16 +76,6 @@ button { font: inherit; color: inherit; }
 
 .brand-sub { font-weight: 500; color: var(--ink-soft); }
 
-.chip {
-  border: 2px solid var(--ink);
-  background: transparent;
-  border-radius: 999px;
-  padding: 6px 16px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.chip:hover { background: rgba(255, 255, 255, 0.5); }
 
 .offline {
   margin: 0 24px 12px;
@@ -146,6 +136,72 @@ button { font: inherit; color: inherit; }
   font-variation-settings: "CASL" 1;
   letter-spacing: -0.02em;
 }
+
+.lead { margin: -8px 0 22px; font-size: 21px; color: var(--ink-soft); }
+
+.link-quiet {
+  display: inline-block;
+  margin: -12px 0 18px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* planta do salão: as mesas ficam onde estão no pontos.yaml */
+.floor-plan {
+  position: relative;
+  width: 100%;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(15, 46, 45, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 46, 45, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
+
+.plan-table {
+  position: absolute;
+  width: clamp(44px, 9vw, 66px);
+  height: clamp(44px, 9vw, 66px);
+  transform: translate(-50%, -50%);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: #fdf0cf;
+  font-size: clamp(17px, 3vw, 24px);
+  font-weight: 800;
+  font-variation-settings: "CASL" 1;
+  cursor: pointer;
+  transition: transform 0.12s, background-color 0.12s;
+}
+
+.plan-table:hover { background: var(--mustard); transform: translate(-50%, -50%) scale(1.06); }
+
+.plan-station,
+.plan-base {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.plan-station {
+  padding: 4px 10px;
+  border: 2px dashed var(--steel);
+  border-radius: 8px;
+  background: var(--paper);
+  white-space: nowrap;
+}
+
+.plan-base svg { display: block; width: 34px; height: 34px; }
 
 .track-link {
   display: flex;
@@ -337,25 +393,6 @@ button { font: inherit; color: inherit; }
 
 .track.is-refused .track-msg { color: var(--late); }
 
-/* -------------------------------------------------- escolher a mesa */
-.table-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 14px;
-}
-
-.table-grid button {
-  aspect-ratio: 1;
-  border: 3px solid var(--ink);
-  border-radius: 22px;
-  background: var(--paper);
-  font-size: 28px;
-  font-weight: 800;
-  font-variation-settings: "CASL" 1;
-  cursor: pointer;
-}
-
-.table-grid button:hover { background: #fdf0cf; }
 
 /* ===================================================== TELA DA BANCADA */
 .bench {
@@ -437,6 +474,19 @@ button { font: inherit; color: inherit; }
 
 .ticket-items .qty { min-width: 2.4ch; text-align: right; }
 
+.ticket-split-title { margin: -4px 0 6px; font-size: 18px; font-weight: 700; }
+
+.ticket-split {
+  margin: 0 0 20px;
+  padding: 0 0 16px;
+  list-style: none;
+  border-bottom: 3px dashed var(--ink);
+  font-size: 19px;
+}
+
+.ticket-split li { display: grid; grid-template-columns: 8ch 1fr; gap: 8px; padding: 3px 0; }
+.ticket-split li span:first-child { font-weight: 800; white-space: nowrap; }
+
 .ticket-wait { margin: 0 0 22px; font-size: 18px; color: var(--ink-soft); }
 
 .ticket .btn-main { width: 100%; font-size: 24px; padding: 20px; font-variation-settings: "CASL" 1, "MONO" 0; }
@@ -460,6 +510,53 @@ button { font: inherit; color: inherit; }
   font-size: 24px;
   font-variation-settings: "CASL" 1;
 }
+
+/* viagem do robô */
+.trip {
+  margin-bottom: 26px;
+  padding: 18px 20px;
+  background: var(--paper);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.trip h2 { margin: 0; }
+.trip-meta, .trip-idle { margin: 2px 0 0; color: var(--ink-soft); }
+
+.trip-stops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: stop;
+}
+
+.trip-stops li {
+  counter-increment: stop;
+  padding: 6px 12px 6px 8px;
+  border: 2px solid var(--steel);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.trip-stops li::before {
+  content: counter(stop);
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--formica);
+  font-size: 13px;
+}
+
+.trip-stops li.is-past { opacity: 0.45; text-decoration: line-through; }
+.trip-stops li.is-now { border-color: var(--ink); background: var(--mustard); }
+.trip-stops li.is-now::before { background: var(--paper); }
 
 /* pedidos do salão */
 .floor h2 {

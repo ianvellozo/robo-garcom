@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  Sistema completo do Robo Garcom - versao 19/10.
+  Sistema completo do Robo Garcom - versao 21/10.
   A navegacao ainda e simulada (finge a viagem); o resto ja e o sistema real.
 
   Demonstracao automatica (pedidos aleatorios e coleta confirmada sozinha):
@@ -9,7 +9,7 @@
     roslaunch garcom_bringup sim.launch deadline_s:=30 order_period_s:=5
   Voce fazendo os pedidos e montando a bandeja pelas telas do navegador:
     roslaunch garcom_bringup sim.launch auto_orders:=false auto_pickup:=false
-    e abra http://localhost:8080/mesa?mesa=2 e http://localhost:8080/bancada
+    e abra http://localhost:8080/mesa e http://localhost:8080/bancada
   (no terminal tambem da: rosrun garcom_interface interface_node.py / station_panel.py)
 -->
 <launch>
@@ -24,6 +24,9 @@
   <!-- Telas no navegador (mesa e bancada) -->
   <arg name="web" default="true"/>
   <arg name="web_port" default="8080"/>
+  <!-- Velocidade media do robo (m/s): a navegacao simulada usa para o tempo das viagens
+       e a missao usa para estimar a rota -->
+  <arg name="speed" default="1.5"/>
   <!-- Topico de velocidade: /cmd_vel no Gazebo, /RosAria/cmd_vel no P3-DX real -->
   <arg name="cmd_vel_topic" default="/cmd_vel"/>
 
@@ -31,6 +34,8 @@
   <param name="garcom/deadline_s" value="$(arg deadline_s)"/>
   <rosparam command="load" ns="garcom" file="$(find garcom_mission)/config/prazos.yaml"/>
   <rosparam command="load" ns="garcom" file="$(find garcom_stock)/config/cardapio.yaml"/>
+  <rosparam command="load" ns="garcom" file="$(find garcom_navigation)/config/pontos.yaml"/>
+  <param name="garcom/robot_speed_mps" value="$(arg speed)"/>
 
   <!-- Estoque (Ian) -->
   <node pkg="garcom_stock" type="stock_server.py" name="stock_server" output="screen"/>
@@ -43,7 +48,6 @@
 
   <!-- Navegacao (Ana) -->
   <node pkg="garcom_navigation" type="navigation_node.py" name="navigation" output="screen">
-    <rosparam command="load" file="$(find garcom_navigation)/config/pontos.yaml"/>
     <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
   </node>
 

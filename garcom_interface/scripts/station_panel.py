@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Tela da estação de coleta (responsável: Ian) - versão 19/10.
+"""Tela da bancada no terminal (responsável: Ian) - versão 21/10.
 
-Substitui a leitura de ArUco. Quando o robô chega numa estação, a missão
-publica em /garcom/pickup_request o que colocar na bandeja. Esta tela mostra
-a lista e confirma a coleta em /garcom/pickup_done.
+Versão de terminal da tela da bancada (a do navegador é o web_server.py).
+Quando o robô chega numa bancada, a missão publica em /garcom/pickup_request
+o total de itens da viagem e a divisão por mesa. Esta tela mostra a lista e
+confirma a coleta em /garcom/pickup_done.
 
 Dois modos (parâmetro ~mode):
 - manual (padrão): mostra os itens e espera a pessoa apertar ENTER.
     rosrun garcom_interface station_panel.py
 - auto: confirma sozinha depois de ~auto_delay_s segundos (usado no sim.launch).
-Futuro: versão web num tablet ou TV na estação.
 """
 import queue
 
@@ -21,20 +21,28 @@ class StationPanel:
     def __init__(self):
         cardapio = rospy.get_param("/garcom/cardapio", [])
         self.names = {entry["item"]: entry["nome"] for entry in cardapio}
+        self.stations = rospy.get_param("/garcom/estacoes", {})
         self.mode = rospy.get_param("~mode", "manual")
         self.delay = float(rospy.get_param("~auto_delay_s", 2.0))
         self.requests = queue.Queue()
 
         self.pub = rospy.Publisher("/garcom/pickup_done", PickupDone, queue_size=10)
         rospy.Subscriber("/garcom/pickup_request", PickupRequest, self.requests.put)
-        rospy.loginfo("Tela da estação pronta (modo %s).", self.mode)
+        rospy.loginfo("Tela da bancada pronta (modo %s).", self.mode)
+
+    def describe(self, items, quantities):
+        return ", ".join("%d x %s" % (q, self.names.get(i, i)) for i, q in zip(items, quantities))
 
     def show(self, req):
-        station = req.station.replace("estacao_", "").replace("_", " ").upper()
-        print("\n************ ESTAÇÃO %s ************" % station)
-        print("Pedido %d - mesa %d. Coloque na bandeja:" % (req.order_id, req.table_id))
+        print("\n************ %s - viagem %d ************" % (self.stations.get(req.station, req.station), req.trip_id))
+        print("Coloque na bandeja:")
         for item, qty in zip(req.items, req.quantities):
             print("   %d x %s" % (qty, self.names.get(item, item)))
+        if len(req.lines) > 1:
+            print("Separado por mesa:")
+            for line in req.lines:
+                print("   Mesa %d (pedido %d): %s" % (line.table_id, line.order_id,
+                                                      self.describe(line.items, line.quantities)))
 
     def run(self):
         while not rospy.is_shutdown():
@@ -47,8 +55,8 @@ class StationPanel:
             else:
                 self.show(req)
                 input("Aperte ENTER quando a bandeja estiver pronta... ")
-            self.pub.publish(PickupDone(order_id=req.order_id, station=req.station))
-            rospy.loginfo("Coleta confirmada: pedido %d em %s", req.order_id, req.station)
+            self.pub.publish(PickupDone(trip_id=req.trip_id, station=req.station))
+            rospy.loginfo("Coleta confirmada: viagem %d em %s", req.trip_id, req.station)
 
 
 def main():

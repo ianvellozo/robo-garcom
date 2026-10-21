@@ -45,10 +45,10 @@ Depois abra no navegador do mesmo computador:
 
 | Tela | Endereço | Para quem |
 | --- | --- | --- |
-| Mesa | http://localhost:8080/mesa?mesa=2 | Cliente: escolhe os itens, faz o pedido e acompanha o robô |
+| Mesa | http://localhost:8080/mesa | Cliente: toca na sua mesa na planta do salão, escolhe os itens, faz o pedido e acompanha o robô |
 | Bancada | http://localhost:8080/bancada | Funcionário: vê o que pôr na bandeja, confirma e ajusta o estoque |
 
-A bancada pode mostrar só uma estação: http://localhost:8080/bancada?estacao=estacao_cafe
+Um tablet fixo numa mesa pode abrir direto no cardápio: http://localhost:8080/mesa?mesa=7. A bancada pode mostrar só uma estação: http://localhost:8080/bancada?estacao=estacao_cafe
 
 **Demonstração automática** (pedidos aleatórios e coleta confirmada sozinha):
 
@@ -101,17 +101,20 @@ O cardápio (itens, estação de cada item e estoque inicial) fica em `garcom_st
 | `/garcom/set_stock` | serviço `SetStock` | web_server (botão Estoque) → stock_server |
 | `/garcom/stock` | tópico `StockLevels` | stock_server → telas |
 | `/garcom/order_status` | tópico `OrderStatus` | order_queue, mission_manager → telas |
-| `/garcom/next_order` | serviço `NextOrder` | mission_manager → order_queue |
+| `/garcom/next_orders` | serviço `NextOrders` | mission_manager → order_queue (pega os pedidos mais urgentes que cabem na bandeja) |
+| `/garcom/trip` | tópico `Trip` | mission_manager → telas (paradas da viagem atual) |
 | `/garcom/go_to_point` | ação `GoToPoint` | mission_manager → navigation |
 | `/garcom/robot_at` | tópico `std_msgs/String` | navigation → quem quiser saber onde o robô chegou |
 | `/garcom/pickup_request` | tópico `PickupRequest` | mission_manager → tela da bancada |
 | `/garcom/pickup_done` | tópico `PickupDone` | tela da bancada → mission_manager |
 
-## Situação atual (19/10)
+## Situação atual (21/10)
 
 - **Fila de pedidos com prazo máximo de entrega:** cronômetro por pedido, alerta aos 70% do prazo, marcação de atraso, atendimento do pedido com menos tempo restante e métricas (tempo médio e % no prazo).
 - **Estoque:** reserva os itens quando o pedido é aceito, recusa o pedido se faltar item, avisa quando um item está acabando e aceita reposição.
-- **Missões:** agrupa os itens por estação (cada estação é visitada uma vez por pedido), pede a coleta e espera a confirmação antes de seguir para a mesa.
-- **Telas no navegador:** a da mesa (cardápio com estoque, carrinho e o trajeto do robô até a mesa) e a da bancada (comanda com o que pôr na bandeja, botão Bandeja pronta, pedidos do salão com alertas e botão Estoque para ajustar as quantidades). Também há versões no terminal.
+- **Viagens com vários pedidos:** como um garçom de verdade, o robô junta os pedidos de várias mesas numa viagem só. Ele pega os mais urgentes que cabem na bandeja (8 itens, até 5 mesas), soma os itens de cada bancada ("2 × Café, 3 × Suco"), passa em cada bancada uma vez e entrega mesa por mesa. Na base, espera 4 s para juntar pedidos que chegam quase juntos.
+- **Rota otimizada:** a ordem das bancadas e das mesas é escolhida para equilibrar a mesa mais perto e o pedido mais atrasado. Cada rota possível recebe um custo (soma dos tempos de chegada, com peso extra para o atraso previsto) e o robô faz a de menor custo. Até 7 mesas ele testa todas as ordens; acima disso escolhe a próxima parada mais barata. O log compara com a ordem de chegada (ex.: custo 140 contra 148).
+- **Telas no navegador:** a da mesa começa pela planta do salão com as 15 mesas (o cliente toca na sua), depois vem o cardápio com estoque e o acompanhamento do robô ("Faltam 2 paradas antes da sua"). A da bancada mostra a comanda da viagem com o total e a divisão por mesa, as paradas da viagem, os pedidos do salão com alertas e o botão Estoque. Também há versões no terminal.
+- **Configurações:** posições da base, bancadas e mesas em `garcom_navigation/config/pontos.yaml`; capacidade da bandeja, espera para agrupar e peso do atraso em `garcom_mission/config/missao.yaml`.
 - **Coleta:** a leitura de marcadores ArUco foi retirada do projeto, com o aval do professor. No lugar, a tela da estação confirma a coleta.
 - **Falta:** a navegação ainda é simulada (finge a viagem). O próximo passo é o robô andando no Gazebo e depois no P3-DX real.

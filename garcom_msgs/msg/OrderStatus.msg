@@ -12,5 +12,7 @@ string[] items
 uint8 status
 time stamp           # momento em que o pedido foi feito
 float32 deadline_s   # prazo maximo de entrega (s)
-bool warning         # passou de 70% do prazo (preenchido a partir de 19/10)
-bool late            # passou do prazo (preenchido a partir de 19/10)
+bool warning         # passou de 70% do prazo
+bool late            # passou do prazo
+uint32 trip_id       # viagem do robo que leva este pedido (0 = ainda sem viagem)
+uint8 stops_before   # mesas que o robo visita antes desta (durante a entrega)

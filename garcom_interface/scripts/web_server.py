@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Telas web do restaurante (responsável: Ian) - versão 19/10.
+"""Telas web do restaurante (responsável: Ian) - versão 21/10.
 
 Liga o ROS ao navegador. Abra no navegador do mesmo computador:
-- http://localhost:8080/mesa?mesa=2  tela da mesa: o cliente escolhe os itens,
-  faz o pedido e acompanha o robô até a mesa;
+- http://localhost:8080/mesa     tela da mesa: o cliente escolhe a mesa na planta
+  do salão, escolhe os itens, faz o pedido e acompanha o robô até a mesa;
 - http://localhost:8080/bancada      tela da bancada: o funcionário vê o que
   colocar na bandeja, confirma a coleta e ajusta o estoque.
   (?estacao=estacao_cafe mostra só os pedidos daquela estação)
 
 Por baixo, o nó publica em /garcom/orders e /garcom/pickup_done, escuta
-/garcom/order_status, /garcom/pickup_request e /garcom/stock, e usa o serviço
-/garcom/set_stock. As páginas ficam na pasta web/ deste pacote.
+/garcom/order_status, /garcom/pickup_request, /garcom/trip e /garcom/stock,
+e usa o serviço /garcom/set_stock. As páginas ficam na pasta web/ deste pacote.
 """
 import json
 import os
@@ -20,7 +20,7 @@ from urllib.parse import urlparse
 
 import rospkg
 import rospy
-from garcom_msgs.msg import Order, OrderStatus, PickupDone, PickupRequest, StockLevels
+from garcom_msgs.msg import Order, OrderStatus, PickupDone, PickupRequest, StockLevels, Trip
 from garcom_msgs.srv import SetStock
 
 STATUS_KEYS = {
@@ -48,7 +48,12 @@ class Bridge:
         } for e in cardapio]
         self.items = {m["item"] for m in self.menu}
         self.stations = rospy.get_param("/garcom/estacoes", {})
-        self.tables = int(rospy.get_param("~tables", 4))
+        points = rospy.get_param("/garcom/points", {})
+        self.tables = sum(1 for name in points if name.startswith("mesa_"))
+        self.floor = [{"ponto": name, "nome": self.point_name(name), "x": p["x"], "y": p["y"],
+                       "tipo": "mesa" if name.startswith("mesa_") else ("base" if name == "base" else "bancada")}
+                      for name, p in points.items()]
+        self.trip = None
 
         self.lock = threading.Lock()
         self.stock = {}
@@ -60,7 +65,16 @@ class Bridge:
         rospy.Subscriber("/garcom/stock", StockLevels, self.on_stock)
         rospy.Subscriber("/garcom/order_status", OrderStatus, self.on_status)
         rospy.Subscriber("/garcom/pickup_request", PickupRequest, self.on_pickup)
+        rospy.Subscriber("/garcom/trip", Trip, self.on_trip)
+        rospy.Subscriber("/garcom/pickup_done", PickupDone, self.on_pickup_done)
         self.set_stock_srv = rospy.ServiceProxy("/garcom/set_stock", SetStock)
+
+    def point_name(self, name):
+        if name.startswith("mesa_"):
+            return "Mesa " + name.split("_", 1)[1]
+        if name == "base":
+            return "Base"
+        return self.stations.get(name, name)
 
     # ---------------------------------------------------------------- ROS
     def on_stock(self, msg):
@@ -83,25 +97,47 @@ class Bridge:
                 "alerta": msg.warning,
                 "atrasado": msg.late,
                 "fim": rospy.Time.now().to_sec() if msg.status in (OrderStatus.ENTREGUE, OrderStatus.RECUSADO) else None,
+                "viagem": msg.trip_id,
+                "paradas_antes": msg.stops_before,
             }
             if len(self.orders) > MAX_ORDERS:
                 for oid in sorted(self.orders)[:len(self.orders) - MAX_ORDERS]:
                     del self.orders[oid]
-            if msg.status in (OrderStatus.ENTREGUE, OrderStatus.RECUSADO):
-                self.pickups = [p for p in self.pickups if p["pedido"] != msg.id]
 
     def on_pickup(self, msg):
         entry = {
-            "pedido": msg.order_id,
-            "mesa": msg.table_id,
+            "viagem": msg.trip_id,
             "estacao": msg.station,
             "estacao_nome": self.stations.get(msg.station, msg.station),
             "itens": [{"item": i, "qtd": q} for i, q in zip(msg.items, msg.quantities)],
+            "linhas": [{"pedido": l.order_id, "mesa": l.table_id,
+                        "itens": [{"item": i, "qtd": q} for i, q in zip(l.items, l.quantities)]}
+                       for l in msg.lines],
             "desde": rospy.Time.now().to_sec(),
         }
         with self.lock:
-            if not any(p["pedido"] == msg.order_id and p["estacao"] == msg.station for p in self.pickups):
+            if not any(p["viagem"] == msg.trip_id and p["estacao"] == msg.station for p in self.pickups):
                 self.pickups.append(entry)
+
+    def on_pickup_done(self, msg):
+        # confirmada por outra tela (terminal ou modo automático)
+        with self.lock:
+            self.pickups = [p for p in self.pickups
+                            if not (p["viagem"] == msg.trip_id and p["estacao"] == msg.station)]
+
+    def on_trip(self, msg):
+        with self.lock:
+            self.trip = {
+                "id": msg.trip_id,
+                "paradas": [{"ponto": p, "nome": self.point_name(p)} for p in msg.stops],
+                "atual": msg.current,
+                "terminou": msg.finished,
+                "pedidos": list(msg.order_ids),
+                "estimado_s": round(msg.estimated_s),
+            }
+            # coletas desta viagem que já ficaram para trás não esperam mais confirmação
+            if msg.finished:
+                self.pickups = [p for p in self.pickups if p["viagem"] != msg.trip_id]
 
     # ------------------------------------------------------------ ações
     def state(self):
@@ -117,6 +153,8 @@ class Bridge:
                 "mesas": self.tables,
                 "cardapio": [dict(m, estoque=self.stock.get(m["item"])) for m in self.menu],
                 "estacoes": self.stations,
+                "planta": self.floor,
+                "viagem": self.trip,
                 "pedidos": orders,
                 "coletas": [dict(p, esperando_s=round(now - p["desde"], 1)) for p in self.pickups],
             }
@@ -140,15 +178,15 @@ class Bridge:
         rospy.loginfo("Pedido %d feito pela tela da mesa %d", order_id, mesa)
         return order_id
 
-    def confirm_pickup(self, pedido, estacao):
+    def confirm_pickup(self, viagem, estacao):
         with self.lock:
             before = len(self.pickups)
-            self.pickups = [p for p in self.pickups if not (p["pedido"] == pedido and p["estacao"] == estacao)]
+            self.pickups = [p for p in self.pickups if not (p["viagem"] == viagem and p["estacao"] == estacao)]
             found = len(self.pickups) < before
         if not found:
-            raise ValueError("Essa coleta já foi confirmada.")
-        self.done_pub.publish(PickupDone(order_id=pedido, station=estacao))
-        rospy.loginfo("Bandeja pronta: pedido %d em %s (tela da bancada)", pedido, estacao)
+            raise ValueError("Essa bandeja já foi confirmada.")
+        self.done_pub.publish(PickupDone(trip_id=viagem, station=estacao))
+        rospy.loginfo("Bandeja pronta: viagem %d em %s (tela da bancada)", viagem, estacao)
 
     def set_stock(self, item, quantidade):
         if item not in self.items or not isinstance(quantidade, int) or quantidade < 0:
@@ -194,7 +232,7 @@ def make_handler(bridge, web_dir):
                 if path == "/api/pedido":
                     return self.send_json({"pedido": bridge.place_order(data.get("mesa"), data.get("itens"))})
                 if path == "/api/bandeja_pronta":
-                    bridge.confirm_pickup(int(data.get("pedido")), str(data.get("estacao")))
+                    bridge.confirm_pickup(int(data.get("viagem")), str(data.get("estacao")))
                     return self.send_json({"ok": True})
                 if path == "/api/estoque":
                     total = bridge.set_stock(data.get("item"), data.get("quantidade"))
