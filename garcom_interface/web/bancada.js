@@ -103,17 +103,32 @@ function floorStatus(o) {
 }
 
 // ----------------------------------------------------------- viagem
+// aviso quando o laser vê algo no caminho do robô
+const NAV_ALERTS = {
+  obstaculo: { cls: "", text: "Robô parado: tem algo no caminho." },
+  sem_caminho: { cls: "", text: "Robô esperando: o caminho está bloqueado." },
+  desviando: { cls: "is-soft", text: "Robô desviando de um obstáculo." },
+};
+
+function navAlert() {
+  const a = state.robo && NAV_ALERTS[state.robo.estado];
+  if (!a) return "";
+  const time = state.robo.estado === "desviando" ? "" : ` <span>(${clockText(state.robo.ha_s)})</span>`;
+  return `<p class="trip-alert ${a.cls}" role="status">${a.text}${time}</p>`;
+}
+
 function renderTrip() {
   const t = state.viagem;
   const panel = $("tripPanel");
   if (!t || t.terminou) {
     const waiting = state.pedidos.some((o) => o.status === "validado");
-    panel.innerHTML = `<h2>Robô</h2><p class="trip-idle">${waiting ? "Juntando os pedidos para a próxima viagem." : "Na base, esperando pedidos."}</p>`;
+    panel.innerHTML = `<h2>Robô</h2><p class="trip-idle">${waiting ? "Juntando os pedidos para a próxima viagem." : "Na base, esperando pedidos."}</p>${navAlert()}`;
     return;
   }
   panel.innerHTML = `
     <h2>Viagem ${t.id}</h2>
     <p class="trip-meta">${t.pedidos.length === 1 ? "1 pedido" : `${t.pedidos.length} pedidos`}, cerca de ${clockText(t.estimado_s)}</p>
+    ${navAlert()}
     <ol class="trip-stops">
       ${t.paradas.map((p, i) => `<li class="${i < t.atual ? "is-past" : i === t.atual ? "is-now" : ""}">${p.nome}</li>`).join("")}
     </ol>`;

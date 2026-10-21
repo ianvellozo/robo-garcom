@@ -1,0 +1,238 @@
+<?xml version="1.0"?>
+<!--
+  P3-DX do Robo Garcom: base vermelha com duas rodas e roda boba atras,
+  laser na frente (como o SICK LMS200 do laboratorio) e uma bandeja em cima.
+
+  Medidas aproximadas do P3-DX real: rodas de 19,5 cm, 33 cm entre as rodas.
+  Mesmos plugins da aula 7 (Gazebo.pdf):
+    libgazebo_ros_diff_drive.so: recebe /cmd_vel e publica /odom
+    libgazebo_ros_laser.so:      publica o laser em /scan
+
+  O base_link fica na altura do eixo das rodas.
+-->
+<robot name="p3dx_garcom" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="raio_roda" value="0.0975"/>
+  <xacro:property name="largura_roda" value="0.05"/>
+  <xacro:property name="entre_rodas" value="0.33"/>
+  <xacro:property name="raio_boba" value="0.04"/>
+
+  <material name="vermelho"><color rgba="0.75 0.1 0.1 1"/></material>
+  <material name="preto"><color rgba="0.08 0.08 0.08 1"/></material>
+  <material name="cinza"><color rgba="0.6 0.6 0.62 1"/></material>
+  <material name="branco"><color rgba="0.97 0.97 0.97 1"/></material>
+  <material name="mostarda"><color rgba="0.95 0.69 0.12 1"/></material>
+
+  <!-- inercia de uma caixa e de um cilindro (formulas da apostila) -->
+  <xacro:macro name="inercia_caixa" params="m x y z">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${m * (y*y + z*z) / 12}" ixy="0" ixz="0"
+               iyy="${m * (x*x + z*z) / 12}" iyz="0" izz="${m * (x*x + y*y) / 12}"/>
+    </inertial>
+  </xacro:macro>
+  <xacro:macro name="inercia_cilindro" params="m r h">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${m * (3*r*r + h*h) / 12}" ixy="0" ixz="0"
+               iyy="${m * (3*r*r + h*h) / 12}" iyz="0" izz="${m * r * r / 2}"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- ===================== corpo ===================== -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.06"/>
+      <geometry><box size="0.42 0.27 0.18"/></geometry>
+      <material name="vermelho"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.155"/>
+      <geometry><box size="0.44 0.38 0.012"/></geometry>
+      <material name="preto"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.06"/>
+      <geometry><box size="0.42 0.27 0.18"/></geometry>
+    </collision>
+    <!-- centro de massa um pouco atras das rodas: o robo se apoia nas rodas e na
+         roda boba e nao tomba para a frente quando freia -->
+    <inertial>
+      <origin xyz="-0.06 0 0.03"/>
+      <mass value="9.0"/>
+      <inertia ixx="0.079" ixy="0" ixz="0" iyy="0.156" iyz="0" izz="0.187"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== rodas ===================== -->
+  <xacro:macro name="roda" params="lado y">
+    <link name="${lado}_wheel">
+      <visual>
+        <origin rpy="1.5708 0 0"/>
+        <geometry><cylinder radius="${raio_roda}" length="${largura_roda}"/></geometry>
+        <material name="preto"/>
+      </visual>
+      <collision>
+        <origin rpy="1.5708 0 0"/>
+        <geometry><cylinder radius="${raio_roda}" length="${largura_roda}"/></geometry>
+      </collision>
+      <xacro:inercia_cilindro m="0.5" r="${raio_roda}" h="${largura_roda}"/>
+    </link>
+    <!-- junta continua: o plugin de tracao diferencial gira esta roda -->
+    <joint name="${lado}_wheel_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${lado}_wheel"/>
+      <origin xyz="0 ${y} 0"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+    <gazebo reference="${lado}_wheel">
+      <material>Gazebo/Black</material>
+      <mu1>1.0</mu1>
+      <mu2>1.0</mu2>
+      <kp>1000000.0</kp>
+      <kd>1.0</kd>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:roda lado="left" y="${entre_rodas / 2}"/>
+  <xacro:roda lado="right" y="${-entre_rodas / 2}"/>
+
+  <!-- roda boba atras (sem atrito, como no pioneer3dx.gazebo da aula) -->
+  <link name="caster">
+    <visual>
+      <geometry><sphere radius="${raio_boba}"/></geometry>
+      <material name="cinza"/>
+    </visual>
+    <collision>
+      <geometry><sphere radius="${raio_boba}"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+  <joint name="caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster"/>
+    <origin xyz="-0.18 0 ${raio_boba - raio_roda}"/>
+  </joint>
+  <gazebo reference="caster">
+    <material>Gazebo/Grey</material>
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+  </gazebo>
+
+  <!-- ===================== laser ===================== -->
+  <link name="laser_link">
+    <visual>
+      <origin xyz="0 0 -0.04"/>
+      <geometry><box size="0.10 0.10 0.12"/></geometry>
+      <material name="preto"/>
+    </visual>
+    <xacro:inercia_caixa m="0.3" x="0.10" y="0.10" z="0.12"/>
+  </link>
+  <joint name="laser_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="laser_link"/>
+    <origin xyz="0.15 0 0.23"/>
+  </joint>
+  <gazebo reference="laser_link">
+    <sensor type="ray" name="laser">
+      <visualize>true</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>181</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.5708</min_angle>
+            <max_angle>1.5708</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>8.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="laser_controller" filename="libgazebo_ros_laser.so">
+        <topicName>/scan</topicName>
+        <frameName>laser_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ===================== bandeja ===================== -->
+  <link name="tray">
+    <visual>
+      <origin xyz="0 0 0.12"/>
+      <geometry><cylinder radius="0.02" length="0.24"/></geometry>
+      <material name="cinza"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.245"/>
+      <geometry><cylinder radius="0.18" length="0.012"/></geometry>
+      <material name="cinza"/>
+    </visual>
+    <!-- um cafe e um croissant em cima da bandeja -->
+    <visual>
+      <origin xyz="0.06 0.05 0.29"/>
+      <geometry><cylinder radius="0.035" length="0.08"/></geometry>
+      <material name="branco"/>
+    </visual>
+    <visual>
+      <origin xyz="-0.06 -0.05 0.27"/>
+      <geometry><box size="0.10 0.05 0.035"/></geometry>
+      <material name="mostarda"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0.2"/>
+      <mass value="0.3"/>
+      <inertia ixx="0.003" ixy="0" ixz="0" iyy="0.003" iyz="0" izz="0.005"/>
+    </inertial>
+  </link>
+  <joint name="tray_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="tray"/>
+    <origin xyz="-0.06 0 0.16"/>
+  </joint>
+  <gazebo reference="base_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+  <gazebo reference="tray">
+    <material>Gazebo/Grey</material>
+  </gazebo>
+
+  <!-- ===================== tracao diferencial ===================== -->
+  <gazebo>
+    <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+      <rosDebugLevel>na</rosDebugLevel>
+      <alwaysOn>true</alwaysOn>
+      <updateRate>50</updateRate>
+      <!-- legacyMode false: leftJoint e mesmo a roda esquerda -->
+      <legacyMode>false</legacyMode>
+      <leftJoint>left_wheel_joint</leftJoint>
+      <rightJoint>right_wheel_joint</rightJoint>
+      <wheelSeparation>${entre_rodas}</wheelSeparation>
+      <wheelDiameter>${2 * raio_roda}</wheelDiameter>
+      <wheelTorque>20</wheelTorque>
+      <wheelAcceleration>0</wheelAcceleration>
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometrySource>world</odometrySource>
+      <robotBaseFrame>base_link</robotBaseFrame>
+      <publishTf>1</publishTf>
+      <publishOdomTF>true</publishOdomTF>
+      <publishWheelTF>false</publishWheelTF>
+      <publishWheelJointState>true</publishWheelJointState>
+    </plugin>
+  </gazebo>
+</robot>

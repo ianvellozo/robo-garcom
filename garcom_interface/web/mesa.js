@@ -201,6 +201,7 @@ function renderTrack() {
     $("trackTime").textContent = "";
     $("trackItems").innerHTML = "";
     $("trackNote").hidden = true;
+    $("trackPause").hidden = true;
     moveRobot(0, 1);
     return;
   }
@@ -217,6 +218,9 @@ function renderTrack() {
   }
   $("trackMsg").textContent = msg;
   moveRobot(pos, stage.reached);
+  const moving = order.status === "em_coleta" || order.status === "em_entrega";
+  const paused = state.robo && (state.robo.estado === "obstaculo" || state.robo.estado === "sem_caminho");
+  $("trackPause").hidden = !(moving && paused);
 
   const done = order.status === "entregue";
   $("trackTime").innerHTML = order.status === "recusado" ? "" :

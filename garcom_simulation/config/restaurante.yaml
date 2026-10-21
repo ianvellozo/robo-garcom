@@ -1,0 +1,35 @@
+# Medidas do salao e dos moveis do restaurante (metros).
+#
+# As POSICOES vem do garcom_navigation/config/pontos.yaml: cada mesa e cada
+# bancada fica na frente do ponto onde o robo para, na direcao do yaw do ponto.
+# Depois de mudar este arquivo ou o pontos.yaml, gere de novo o mundo e o mapa:
+#   rosrun garcom_simulation gerar_mundo.py
+
+salao:
+  x_min: -1.5
+  x_max: 11.6
+  y_min: -5.0
+  y_max: 5.0
+  espessura_parede: 0.15
+  altura_parede: 1.0
+
+mesa:
+  raio: 0.35               # mesa redonda de 70 cm
+  altura: 0.75
+  distancia_do_ponto: 0.75 # do ponto onde o robo para ate o centro da mesa
+
+cadeira:                   # uma de cada lado da mesa (fecha o vao entre as mesas da fileira)
+  lado: 0.4
+  altura_assento: 0.45
+  altura_encosto: 0.9
+  distancia_da_mesa: 0.6   # do centro da mesa ate o centro da cadeira
+
+bancada:
+  comprimento: 1.8
+  profundidade: 0.6
+  altura: 0.9
+  distancia_do_ponto: 0.7  # do ponto onde o robo para ate o centro da bancada
+
+mapa:
+  resolucao: 0.05          # tamanho de cada quadradinho do mapa
+  margem: 0.5              # area desconhecida em volta das paredes

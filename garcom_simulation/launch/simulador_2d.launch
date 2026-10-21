@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  Simulador 2D leve (sem Gazebo): o mesmo restaurante, com /cmd_vel, /odom e /scan.
+  Use quando o Gazebo estiver pesado ou para testar rapido.
+  Sistema completo com ele: roslaunch garcom_bringup sim2d.launch
+-->
+<launch>
+  <!-- false: so o simulador (sem robot_state_publisher e TF do mapa) -->
+  <arg name="visual" default="true"/>
+
+  <node pkg="garcom_simulation" type="simulador_2d.py" name="simulador_2d" output="screen"/>
+
+  <group if="$(arg visual)">
+    <param name="robot_description"
+           command="$(find xacro)/xacro '$(find garcom_simulation)/urdf/p3dx_garcom.urdf.xacro'"/>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    <node name="mapa_para_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 map odom"/>
+  </group>
+</launch>

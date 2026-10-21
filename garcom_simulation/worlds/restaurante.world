@@ -1,0 +1,489 @@
+<?xml version="1.0"?>
+<!-- Gerado por garcom_simulation/scripts/gerar_mundo.py. Nao edite a mao:
+     mude o pontos.yaml ou o restaurante.yaml e rode o gerar_mundo.py de novo. -->
+<sdf version="1.6">
+  <world name="restaurante">
+    <include><uri>model://sun</uri></include>
+    <include><uri>model://ground_plane</uri></include>
+    <scene>
+      <ambient>0.6 0.6 0.6 1</ambient>
+      <background>0.84 0.93 0.89 1</background>
+      <shadows>false</shadows>
+    </scene>
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <gui>
+      <camera name="user_camera"><pose>5.05 -11.50 9.5 0 0.85 1.5708</pose></camera>
+    </gui>
+    <model name="piso">
+      <static>true</static>
+      <pose>5.050 0.000 0.001 0 0 0</pose>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>13.100 10.000 0.002</size></box></geometry><material><ambient>0.80 0.76 0.70 1</ambient><diffuse>0.80 0.76 0.70 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="parede_norte">
+      <static>true</static>
+      <pose>5.050 5.075 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.500 0 0 0</pose><geometry><box><size>13.400 0.150 1.000</size></box></geometry></collision>
+        <visual name="visual"><pose>0 0 0.500 0 0 0</pose><geometry><box><size>13.400 0.150 1.000</size></box></geometry><material><ambient>0.84 0.93 0.89 1</ambient><diffuse>0.84 0.93 0.89 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="parede_sul">
+      <static>true</static>
+      <pose>5.050 -5.075 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.500 0 0 0</pose><geometry><box><size>13.400 0.150 1.000</size></box></geometry></collision>
+        <visual name="visual"><pose>0 0 0.500 0 0 0</pose><geometry><box><size>13.400 0.150 1.000</size></box></geometry><material><ambient>0.84 0.93 0.89 1</ambient><diffuse>0.84 0.93 0.89 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="parede_oeste">
+      <static>true</static>
+      <pose>-1.575 0.000 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.500 0 0 0</pose><geometry><box><size>0.150 10.000 1.000</size></box></geometry></collision>
+        <visual name="visual"><pose>0 0 0.500 0 0 0</pose><geometry><box><size>0.150 10.000 1.000</size></box></geometry><material><ambient>0.84 0.93 0.89 1</ambient><diffuse>0.84 0.93 0.89 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="parede_leste">
+      <static>true</static>
+      <pose>11.675 0.000 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.500 0 0 0</pose><geometry><box><size>0.150 10.000 1.000</size></box></geometry></collision>
+        <visual name="visual"><pose>0 0 0.500 0 0 0</pose><geometry><box><size>0.150 10.000 1.000</size></box></geometry><material><ambient>0.84 0.93 0.89 1</ambient><diffuse>0.84 0.93 0.89 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_1">
+      <static>true</static>
+      <pose>3.500 3.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_2">
+      <static>true</static>
+      <pose>5.000 3.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_3">
+      <static>true</static>
+      <pose>6.500 3.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_4">
+      <static>true</static>
+      <pose>8.000 3.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_5">
+      <static>true</static>
+      <pose>9.500 3.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_6">
+      <static>true</static>
+      <pose>3.500 0.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_7">
+      <static>true</static>
+      <pose>5.000 0.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_8">
+      <static>true</static>
+      <pose>6.500 0.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_9">
+      <static>true</static>
+      <pose>8.000 0.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_10">
+      <static>true</static>
+      <pose>9.500 0.750 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_11">
+      <static>true</static>
+      <pose>3.500 -2.250 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_12">
+      <static>true</static>
+      <pose>5.000 -2.250 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_13">
+      <static>true</static>
+      <pose>6.500 -2.250 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_14">
+      <static>true</static>
+      <pose>8.000 -2.250 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="mesa_15">
+      <static>true</static>
+      <pose>9.500 -2.250 0 0 0 0</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.375 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.750</length></cylinder></geometry></collision>
+        <visual name="toalha"><pose>0 0 0.360 0 0 0</pose><geometry><cylinder><radius>0.350</radius><length>0.720</length></cylinder></geometry><material><ambient>0.99 0.94 0.81 1</ambient><diffuse>0.99 0.94 0.81 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="tampo"><pose>0 0 0.735 0 0 0</pose><geometry><cylinder><radius>0.370</radius><length>0.030</length></cylinder></geometry><material><ambient>0.06 0.18 0.18 1</ambient><diffuse>0.06 0.18 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_1_a">
+      <static>true</static>
+      <pose>2.900 3.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_1_b">
+      <static>true</static>
+      <pose>4.100 3.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_2_a">
+      <static>true</static>
+      <pose>4.400 3.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_2_b">
+      <static>true</static>
+      <pose>5.600 3.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_3_a">
+      <static>true</static>
+      <pose>5.900 3.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_3_b">
+      <static>true</static>
+      <pose>7.100 3.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_4_a">
+      <static>true</static>
+      <pose>7.400 3.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_4_b">
+      <static>true</static>
+      <pose>8.600 3.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_5_a">
+      <static>true</static>
+      <pose>8.900 3.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_5_b">
+      <static>true</static>
+      <pose>10.100 3.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_6_a">
+      <static>true</static>
+      <pose>2.900 0.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_6_b">
+      <static>true</static>
+      <pose>4.100 0.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_7_a">
+      <static>true</static>
+      <pose>4.400 0.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_7_b">
+      <static>true</static>
+      <pose>5.600 0.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_8_a">
+      <static>true</static>
+      <pose>5.900 0.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_8_b">
+      <static>true</static>
+      <pose>7.100 0.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_9_a">
+      <static>true</static>
+      <pose>7.400 0.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_9_b">
+      <static>true</static>
+      <pose>8.600 0.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_10_a">
+      <static>true</static>
+      <pose>8.900 0.750 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_10_b">
+      <static>true</static>
+      <pose>10.100 0.750 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_11_a">
+      <static>true</static>
+      <pose>2.900 -2.250 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_11_b">
+      <static>true</static>
+      <pose>4.100 -2.250 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_12_a">
+      <static>true</static>
+      <pose>4.400 -2.250 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_12_b">
+      <static>true</static>
+      <pose>5.600 -2.250 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_13_a">
+      <static>true</static>
+      <pose>5.900 -2.250 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_13_b">
+      <static>true</static>
+      <pose>7.100 -2.250 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_14_a">
+      <static>true</static>
+      <pose>7.400 -2.250 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_14_b">
+      <static>true</static>
+      <pose>8.600 -2.250 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_15_a">
+      <static>true</static>
+      <pose>8.900 -2.250 0 0 0 0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="cadeira_mesa_15_b">
+      <static>true</static>
+      <pose>10.100 -2.250 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry></collision>
+        <visual name="assento"><pose>0 0 0.225 0 0 0</pose><geometry><box><size>0.400 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+        <visual name="encosto"><pose>-0.175 0 0.675 0 0 0</pose><geometry><box><size>0.050 0.400 0.450</size></box></geometry><material><ambient>0.45 0.30 0.18 1</ambient><diffuse>0.45 0.30 0.18 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="bancada_estacao_cafe">
+      <static>true</static>
+      <pose>1.000 3.200 0 0 0 3.1416</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.450 0 0 0</pose><geometry><box><size>1.800 0.600 0.900</size></box></geometry></collision>
+        <visual name="visual"><pose>0 0 0.450 0 0 0</pose><geometry><box><size>1.800 0.600 0.900</size></box></geometry><material><ambient>0.36 0.55 0.62 1</ambient><diffuse>0.36 0.55 0.62 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="bancada_estacao_croissant">
+      <static>true</static>
+      <pose>1.000 -3.200 0 0 0 -0.0000</pose>
+      <link name="link">
+        <collision name="colisao"><pose>0 0 0.450 0 0 0</pose><geometry><box><size>1.800 0.600 0.900</size></box></geometry></collision>
+        <visual name="visual"><pose>0 0 0.450 0 0 0</pose><geometry><box><size>1.800 0.600 0.900</size></box></geometry><material><ambient>0.95 0.69 0.12 1</ambient><diffuse>0.95 0.69 0.12 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="base_do_robo">
+      <static>true</static>
+      <pose>0.000 0.000 0.002 0 0 0</pose>
+      <link name="link">
+        <visual name="marca"><geometry><box><size>0.700 0.700 0.004</size></box></geometry><material><ambient>0.95 0.69 0.12 1</ambient><diffuse>0.95 0.69 0.12 1</diffuse><specular>0.1 0.1 0.1 1</specular></material></visual>
+      </link>
+    </model>
+  </world>
+</sdf>

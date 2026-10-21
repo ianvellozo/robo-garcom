@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>garcom_navigation</name>
-  <version>0.1.0</version>
-  <description>Mapa, localizacao, planejamento A* e controle do Robo Garcom</description>
+  <version>0.2.0</version>
+  <description>Mapa, planejamento A*, controle e parada/desvio de obstaculos do Robo Garcom</description>
+  <maintainer email="ian@todo.com">Ian</maintainer>
   <maintainer email="ana@todo.com">Ana</maintainer>
   <license>MIT</license>
 
@@ -11,4 +12,7 @@
   <depend>std_msgs</depend>
   <depend>garcom_msgs</depend>
   <exec_depend>actionlib</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
 </package>

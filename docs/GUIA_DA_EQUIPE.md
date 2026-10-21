@@ -2,7 +2,7 @@
 
 Este guia é para quem nunca mexeu com ROS, Linux ou Git. Siga na ordem.
 
-**Resumo:** o sistema inteiro já roda. Cada parte do robô é um programa separado (um "nó"). Só a **navegação** ainda é um esqueleto que finge a viagem; o trabalho da Ana é trocar o "fingir" pelo robô andando de verdade, sem mudar os nomes dos canais de comunicação.
+**Resumo:** o sistema inteiro já roda. Cada parte do robô é um programa separado (um "nó"). Desde 21/10 a navegação também é de verdade: o robô planeja a rota com A\*, anda pelo restaurante no Gazebo (ou num simulador 2D leve) e para ou desvia quando o laser vê alguém no caminho.
 
 ---
 
@@ -23,17 +23,19 @@ Este guia é para quem nunca mexeu com ROS, Linux ou Git. Siga na ordem.
 2. A **fila** pede ao **estoque** para reservar os itens. Se faltar algum, o pedido é recusado.
 3. A fila controla o **prazo máximo de entrega**: avisa quando o pedido passa de 70% do prazo e marca como atrasado se passar do prazo.
 4. O **gerente de missões** monta uma **viagem**: pega os pedidos mais urgentes que cabem na bandeja (até 8 itens e 5 mesas), soma os itens por bancada e escolhe a melhor ordem de paradas, equilibrando a mesa mais perto e o pedido mais atrasado.
-5. Em cada bancada, a **tela da bancada** mostra o total ("2 × Café, 3 × Suco") e como separar por mesa. O funcionário monta e aperta **Bandeja pronta**.
-6. O robô entrega mesa por mesa. Se tiver mais pedidos esperando, já sai para a próxima viagem; se não, volta para a base. Cada mudança de estado do pedido sai em `/garcom/order_status`.
+5. Para cada parada, a **navegação** calcula a rota com A\* no mapa e leva o robô até lá, de olho no laser.
+6. Em cada bancada, a **tela da bancada** mostra o total ("2 × Café, 3 × Suco") e como separar por mesa. O funcionário monta e aperta **Bandeja pronta**.
+7. O robô entrega mesa por mesa. Se tiver mais pedidos esperando, já sai para a próxima viagem; se não, volta para a base. Cada mudança de estado do pedido sai em `/garcom/order_status`.
 
 | Nó | Responsável | Hoje |
 | --- | --- | --- |
 | `order_queue` (fila e prazos) | Ian | Pronto |
-| `mission_manager` (missões) | Ian | Pronto |
+| `mission_manager` (viagens e ordem das paradas) | Ian | Pronto |
 | `stock_server` (estoque) | Ian | Pronto |
 | `web_server` (telas da mesa e da bancada no navegador) | Ian | Pronto |
 | `interface` e `station_panel` (as mesmas telas no terminal) | Ian | Pronto |
-| `navigation` | Ana | **Esqueleto:** finge a viagem (tempo = distância ÷ velocidade) |
+| `navigation` (A\*, controle, parada e desvio) | Ian na parcial; Ana no robô real | Pronto no Gazebo e no simulador 2D |
+| Gazebo (`mundo.launch`) e `simulador_2d` | Ian na parcial; Ana no robô real | Pronto |
 
 A leitura de marcadores ArUco foi retirada do projeto, com o aval do professor, depois que a Mariana saiu da disciplina. A tela da estação ocupa esse lugar.
 
@@ -57,7 +59,7 @@ Reinicie se pedir, abra "Ubuntu 20.04" no menu Iniciar e crie usuário e senha (
 sudo apt update && sudo apt install -y curl git && curl -L -o /tmp/ros-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/1.2.0/ros-apt-source_1.2.0.focal_all.deb" && sudo dpkg -i /tmp/ros-apt-source.deb && sudo apt update && sudo apt install -y ros-noetic-desktop-full && echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc && echo 'export ROS_HOSTNAME=localhost' >> ~/.bashrc && echo 'export ROS_MASTER_URI=http://localhost:11311' >> ~/.bashrc && source ~/.bashrc
 ```
 
-Leva de 20 a 40 minutos. No final, `rosversion -d` tem que mostrar `noetic`.
+Leva de 20 a 40 minutos. No final, `rosversion -d` tem que mostrar `noetic`. O `desktop-full` já traz o Gazebo e o RViz.
 
 ## 4. Baixar o projeto e compilar
 
@@ -70,57 +72,91 @@ No final do `catkin_make` tem que aparecer `[100%]`, sem erro em vermelho.
 **Para pegar as atualizações** (faça sempre antes de começar a mexer):
 
 ```bash
-cd ~/catkin_ws/src/robo-garcom && git stash && git pull && cd ~/catkin_ws && catkin_make
+cd ~/catkin_ws/src/robo-garcom && git stash && git pull && cd ~/catkin_ws && catkin_make && source devel/setup.bash
 ```
 
 ## 5. Rodar
 
-```bash
-roslaunch garcom_bringup sim.launch
-```
+Escolha um dos três. Todos sobem o sistema inteiro; para parar, aperte **Ctrl+C**.
 
-Os pedidos começam a aparecer no terminal. Para ver o "organograma" dos nós, abra **outro terminal** do Ubuntu e rode `rqt_graph`. Para parar, aperte **Ctrl+C**.
+| Comando | O que abre |
+| --- | --- |
+| `roslaunch garcom_bringup gazebo.launch` | **Gazebo** com o restaurante e o P3-DX, mais o **RViz** mostrando o mapa, o laser (pontinhos vermelhos) e a rota A\* (linha amarela). A primeira abertura do Gazebo pode levar 1 ou 2 minutos. |
+| `roslaunch garcom_bringup sim2d.launch` | **Simulador 2D leve** (sem Gazebo) e o RViz. O robô anda de verdade, com odometria e laser. Bom para testar rápido ou em computador fraco. |
+| `roslaunch garcom_bringup sim.launch` | **Sem robô**: a viagem é só um tempo de espera. Serve para mexer nas telas, na fila e no estoque. |
+
+Os pedidos aparecem sozinhos (um a cada 20 ou 30 s) e a bandeja é confirmada sozinha. Para você fazer tudo pelas telas, acrescente `auto_orders:=false auto_pickup:=false` no fim do comando e abra no navegador:
+
+- http://localhost:8080/mesa (cliente)
+- http://localhost:8080/bancada (funcionário)
+
+**Testar a parada e o desvio:** com o Gazebo ou o simulador 2D rodando, abra **outro terminal** e rode:
+
+| Comando | O que acontece |
+| --- | --- |
+| `rosrun garcom_simulation obstaculo.py` | Aparece um cliente em pé na rota, 1,5 m à frente do robô. Ele vê pelo laser e desvia sem precisar parar. |
+| `rosrun garcom_simulation obstaculo.py frente 0.8` | O cliente aparece bem perto: o robô freia na hora, depois acha outro caminho. |
+| `rosrun garcom_simulation obstaculo.py 8 0` | Cliente no ponto x = 8, y = 0 (é onde o robô para para atender a mesa 9). Se o robô estiver indo para lá, ele para antes e espera. |
+| `rosrun garcom_simulation obstaculo.py tirar` | Tira todos os clientes; o robô continua. |
+
+No Gazebo também dá para pôr uma caixa na frente do robô pelo menu de cima (cubo) e arrastar.
 
 Outros jeitos de rodar:
 
 | Para... | Rode |
 | --- | --- |
-| Usar as telas no navegador | `roslaunch garcom_bringup sim.launch auto_orders:=false auto_pickup:=false` e abra http://localhost:8080/mesa e http://localhost:8080/bancada |
 | Ver os alertas de prazo | `roslaunch garcom_bringup sim.launch deadline_s:=30 order_period_s:=5` |
-| Fazer os pedidos você mesmo | `roslaunch garcom_bringup sim.launch auto_orders:=false` e, em outro terminal, `rosrun garcom_interface interface_node.py` |
-| Confirmar a coleta você mesmo | `roslaunch garcom_bringup sim.launch auto_pickup:=false` e, em outro terminal, `rosrun garcom_interface station_panel.py` |
+| Gazebo sem RViz (mais leve) | `roslaunch garcom_bringup gazebo.launch rviz:=false` |
+| Só o restaurante no Gazebo, andando pelo teclado | `roslaunch garcom_simulation mundo.launch` e, em outro terminal, `rosrun teleop_twist_keyboard teleop_twist_keyboard.py` (instale com `sudo apt install ros-noetic-teleop-twist-keyboard`) |
+| Fazer os pedidos pelo terminal | `rosrun garcom_interface interface_node.py` (com `auto_orders:=false`) |
 | Repor um item | `rosservice call /garcom/restock "{item: 'rosquinha', quantity: 5}"` |
-
-O cardápio (itens, estação de cada item e estoque inicial) fica em `garcom_stock/config/cardapio.yaml`.
+| Ver o "organograma" dos nós | `rqt_graph` em outro terminal |
 
 ---
 
-## 6. Parte da Ana: simulação e navegação
+## 6. Simulação e navegação
 
-**Arquivos:** `garcom_simulation/` (mundo e robô no Gazebo) e `garcom_navigation/scripts/navigation_node.py`.
+Na Apresentação 2 (26/10), o Ian cobriu esta parte para aliviar a Ana. Daqui para frente, a Ana leva isso para o P3-DX real (veja o cronograma).
 
-A regra é uma só: **troque o "finge a viagem" pelo robô andando de verdade, mas mantenha os mesmos nomes de tópicos e ações.** Assim o resto do sistema continua funcionando sem ninguém mexer no código do outro. O arquivo tem um comentário `TODO` mostrando onde mexer.
+### Arquivos
 
-**O que o nó de navegação precisa fazer (o "contrato"):**
-
-| Recebe | Envia |
+| Arquivo | O que tem |
 | --- | --- |
-| Ação `/garcom/go_to_point` com o nome do ponto (`base`, `estacao_cafe`, `mesa_2`...) | Resultado `success = True` quando chegar |
-| Coordenadas de cada ponto em `config/pontos.yaml` | `/garcom/robot_at` (texto com o nome do ponto) ao chegar |
-| | `/cmd_vel` (velocidade) para mover o robô |
+| `garcom_navigation/config/pontos.yaml` | Onde o robô **para** em cada mesa, bancada e base, e para onde fica virado |
+| `garcom_simulation/config/restaurante.yaml` | Medidas do salão, das mesas, das cadeiras e das bancadas |
+| `garcom_simulation/scripts/gerar_mundo.py` | Gera o mundo do Gazebo (`worlds/restaurante.world`) e o mapa (`garcom_navigation/maps/restaurante.pgm` e `.yaml`) a partir dos dois arquivos acima |
+| `garcom_simulation/urdf/p3dx_garcom.urdf.xacro` | O P3-DX: rodas, roda boba, laser na frente e bandeja. Usa os plugins da aula 7 (`libgazebo_ros_diff_drive.so` e `libgazebo_ros_laser.so`) |
+| `garcom_simulation/scripts/simulador_2d.py` | Simulador leve: mesmo restaurante, mesmos tópicos (`/cmd_vel`, `/odom`, `/scan`) |
+| `garcom_simulation/scripts/obstaculo.py` | Põe e tira clientes em pé (Gazebo e simulador 2D) |
+| `garcom_navigation/scripts/planejador.py` | Lê o mapa, calcula a margem de segurança e roda o A\* |
+| `garcom_navigation/scripts/navigation_node.py` | Recebe "vá até mesa_2", segue a rota e cuida dos obstáculos |
+| `garcom_navigation/config/navegacao.yaml` | Velocidade, aceleração, margem de segurança e distâncias de parada |
 
-**Ordem sugerida, do mais fácil ao mais difícil.** Para a apresentação de 26/10, o mínimo é chegar ao passo 3:
+Cada mesa fica 75 cm à frente do ponto onde o robô para (na direção do `yaw` do ponto), com uma cadeira de cada lado. Por isso, **mudou o `pontos.yaml`, rode `rosrun garcom_simulation gerar_mundo.py`**: o mundo do Gazebo e o mapa acompanham.
 
-1. **P3-DX no Gazebo andando pelo teclado.** A aula 7 (`Gazebo.pdf`) traz o modelo do P3DX (`pioneer3dx.xacro` e `pioneer3dx.gazebo`, com laser e o plugin de tração diferencial). Teste com `rosrun teleop_twist_keyboard teleop_twist_keyboard.py` (instale com `sudo apt install ros-noetic-teleop-twist-keyboard`) ou com `rostopic pub /cmd_vel ...`, como na aula.
-2. **Restaurante no Gazebo:** paredes, a base, duas estações e quatro mesas (podem ser caixas simples). Salve em `garcom_simulation/worlds/` e crie um launch em `garcom_simulation/launch/` que abre o mundo com o robô. O Ian vai ajudar nesta parte.
-3. **Ir até um ponto:** no `navigation_node.py`, troque o "finge 3 s" por um controle que lê a posição do robô em `/odom` e publica em `/cmd_vel` até chegar nas coordenadas do `pontos.yaml`. Depois atualize as coordenadas do `pontos.yaml` para o mundo do Gazebo.
-4. **Mapa e A\*:** gere o mapa com o `gmapping` e use o `move_base` com o planejador global em modo A\* (`global_planner` com `use_dijkstra: false`).
+### Como a navegação funciona
 
-**Testar sozinha:** com o seu launch rodando, mande o robô para um ponto:
+1. **Mapa:** quadradinhos de 5 cm, cada um livre, ocupado ou desconhecido. Para cada quadradinho o planejador calcula a distância até o móvel mais perto.
+2. **Margem de segurança:** o centro do robô nunca chega a menos de 30 cm de um móvel (proibido). Entre 30 e 70 cm pode passar, mas custa mais, então o A\* prefere o meio dos corredores.
+3. **A\*:** busca em 8 direções a rota de menor custo até o ponto. Depois corta os zigue-zagues em linha reta quando dá. Leva menos de 0,1 s.
+4. **Controle:** o robô persegue um ponto da rota 50 cm à frente (*pure pursuit*), lendo a posição em `/odom` e mandando velocidade em `/cmd_vel`. Acelera devagar (0,4 m/s²) por causa da bandeja, chega devagar e no fim gira para ficar de frente para a mesa.
+5. **Laser e obstáculos:** a cada leitura do laser, o robô confere o "corredor" que ele vai ocupar nos próximos metros da rota:
+   - algo **novo** (que não está no mapa) encostando na rota mais à frente: marca no mapa e **replaneja** antes de chegar perto (desvio);
+   - algo a menos de 1,2 m: **desacelera**;
+   - algo a menos de 45 cm do para-choque: **para** (freio forte);
+   - parado há 3 s e o obstáculo continua: marca no mapa e procura **outro caminho**;
+   - sem outro caminho (por exemplo, a pessoa está no ponto da mesa): **espera** ela sair e segue.
 
-```bash
-rostopic pub -1 /garcom/go_to_point/goal garcom_msgs/GoToPointActionGoal "goal: {point_name: 'mesa_2'}"
-```
+   As marcas somem depois de 20 s ou quando o laser olha de novo e não vê mais nada lá. Pessoas ganham 15 cm a mais de margem que os móveis.
+6. **Estado:** a navegação publica em `/garcom/nav_state` se está `andando`, `desviando`, `obstaculo` (parado), `sem_caminho` (esperando) ou `parado`. As telas da bancada e da mesa mostram o aviso.
+
+### Para o P3-DX real (próximas semanas)
+
+- O `sim.launch` já aceita os tópicos do robô real: `cmd_vel_topic:=/RosAria/cmd_vel odom_topic:=/RosAria/pose` (o laser SICK publica em `/scan`).
+- **Mapa do laboratório:** fazer com o `gmapping` (`sudo apt install ros-noetic-gmapping ros-noetic-map-server`), andando com o joystick como na aula do Pioneer, e salvar com `rosrun map_server map_saver -f laboratorio`. Depois passar `mapa:=/caminho/laboratorio.yaml`.
+- **Localização:** no simulador a odometria é perfeita; no robô real ela escorrega com o tempo. Falta ligar o AMCL para corrigir a posição no mapa.
+- **Pontos:** medir no laboratório onde ficam a base, as bancadas e as mesas e atualizar o `pontos.yaml`.
+- Se o laser estiver montado de cabeça para baixo, use `laser_invertido: true` no `navegacao.yaml`.
 
 ---
 
@@ -130,7 +166,7 @@ Antes, mande o seu **nome de usuário do GitHub** para o Ian adicionar você com
 
 **Jeito mais fácil (pelo site):**
 
-1. No GitHub, abra o arquivo que você mudou (ex.: `garcom_navigation/scripts/navigation_node.py`).
+1. No GitHub, abra o arquivo que você mudou (ex.: `garcom_navigation/config/pontos.yaml`).
 2. Clique no **lápis** (Edit), apague tudo, cole o seu código novo e clique em **Commit changes**.
 3. Arquivo novo: entre na pasta certa no site e use **Add file → Upload files**.
 
@@ -161,3 +197,7 @@ Cada um mexe só nos próprios arquivos, assim ninguém atrapalha o outro.
 | Erro com mensagens (`garcom_msgs`) depois de atualizar | Rode `catkin_make` de novo |
 | "Address already in use" (porta 8080) | Já tem outro `roslaunch` rodando. Feche o outro, ou use `web_port:=8081` e abra http://localhost:8081 |
 | A tela diz "Sem conexão com o robô" | O `roslaunch` não está rodando ou foi fechado |
+| Gazebo abre preto, trava ou fecha sozinho | Feche tudo e rode com o desenho por software: `LIBGL_ALWAYS_SOFTWARE=1 roslaunch garcom_bringup gazebo.launch`. Se continuar pesado, use `gui:=false` (o Gazebo roda escondido e o RViz mostra tudo) ou o `sim2d.launch` |
+| Gazebo demora muito para abrir na primeira vez | É normal: ele procura modelos na internet. Espere 1 ou 2 minutos |
+| "Sem odometria: confira o topico /odom" | O Gazebo (ou o simulador 2D) ainda não subiu. Espere ou confira se o robô apareceu no mundo |
+| O robô fica girando ou não sai do lugar | Confira se não tem cliente de teste esquecido no caminho: `rosrun garcom_simulation obstaculo.py tirar` |

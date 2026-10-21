@@ -1,30 +1,35 @@
-# Pontos nomeados do restaurante: posicao x, y (m) e orientacao yaw (rad) no mapa.
+# Pontos nomeados do restaurante: onde o robo PARA (x, y em metros) e para onde
+# ele fica virado ao chegar (yaw em radianos; 1.5708 = virado para cima na planta).
 # Carregado em /garcom/points pelo sim.launch: a navegacao usa para ir aos pontos,
 # a missao usa para planejar a rota e a tela da mesa desenha a planta do salao.
 #
-# Planta (x para a direita, y para cima):
-#   bancadas e base a esquerda; 15 mesas em 3 fileiras de 5.
+# Cada mesa e cada bancada fica na frente do seu ponto, na direcao do yaw
+# (distancias em garcom_simulation/config/restaurante.yaml). Por isso o mundo do
+# Gazebo e o mapa saem daqui. Depois de mudar este arquivo, gere de novo:
+#   rosrun garcom_simulation gerar_mundo.py
 #
-# TODO(Ana): ajustar as coordenadas ao mundo do Gazebo e depois ao mapa do laboratorio.
+# Planta (x para a direita, y para cima):
+#   base e bancadas a esquerda; 15 mesas em 3 fileiras de 5.
+#   O robo atende cada mesa pelo corredor de baixo dela.
 points:
   base:              {x: 0.0, y: 0.0,  yaw: 0.0}
-  estacao_cafe:      {x: 1.0, y: 2.5,  yaw: 1.57}
-  estacao_croissant: {x: 1.0, y: -2.5, yaw: -1.57}
+  estacao_cafe:      {x: 1.0, y: 2.5,  yaw: 1.5708}
+  estacao_croissant: {x: 1.0, y: -2.5, yaw: -1.5708}
 
-  mesa_1:  {x: 3.5, y: 3.0,  yaw: 0.0}
-  mesa_2:  {x: 5.0, y: 3.0,  yaw: 0.0}
-  mesa_3:  {x: 6.5, y: 3.0,  yaw: 0.0}
-  mesa_4:  {x: 8.0, y: 3.0,  yaw: 0.0}
-  mesa_5:  {x: 9.5, y: 3.0,  yaw: 0.0}
+  mesa_1:  {x: 3.5, y: 3.0,  yaw: 1.5708}
+  mesa_2:  {x: 5.0, y: 3.0,  yaw: 1.5708}
+  mesa_3:  {x: 6.5, y: 3.0,  yaw: 1.5708}
+  mesa_4:  {x: 8.0, y: 3.0,  yaw: 1.5708}
+  mesa_5:  {x: 9.5, y: 3.0,  yaw: 1.5708}
 
-  mesa_6:  {x: 3.5, y: 0.0,  yaw: 0.0}
-  mesa_7:  {x: 5.0, y: 0.0,  yaw: 0.0}
-  mesa_8:  {x: 6.5, y: 0.0,  yaw: 0.0}
-  mesa_9:  {x: 8.0, y: 0.0,  yaw: 0.0}
-  mesa_10: {x: 9.5, y: 0.0,  yaw: 0.0}
+  mesa_6:  {x: 3.5, y: 0.0,  yaw: 1.5708}
+  mesa_7:  {x: 5.0, y: 0.0,  yaw: 1.5708}
+  mesa_8:  {x: 6.5, y: 0.0,  yaw: 1.5708}
+  mesa_9:  {x: 8.0, y: 0.0,  yaw: 1.5708}
+  mesa_10: {x: 9.5, y: 0.0,  yaw: 1.5708}
 
-  mesa_11: {x: 3.5, y: -3.0, yaw: 0.0}
-  mesa_12: {x: 5.0, y: -3.0, yaw: 0.0}
-  mesa_13: {x: 6.5, y: -3.0, yaw: 0.0}
-  mesa_14: {x: 8.0, y: -3.0, yaw: 0.0}
-  mesa_15: {x: 9.5, y: -3.0, yaw: 0.0}
+  mesa_11: {x: 3.5, y: -3.0, yaw: 1.5708}
+  mesa_12: {x: 5.0, y: -3.0, yaw: 1.5708}
+  mesa_13: {x: 6.5, y: -3.0, yaw: 1.5708}
+  mesa_14: {x: 8.0, y: -3.0, yaw: 1.5708}
+  mesa_15: {x: 9.5, y: -3.0, yaw: 1.5708}

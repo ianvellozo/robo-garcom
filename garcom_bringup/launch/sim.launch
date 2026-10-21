@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <!--
   Sistema completo do Robo Garcom - versao 21/10.
-  A navegacao ainda e simulada (finge a viagem); o resto ja e o sistema real.
+  Por padrao a navegacao e simulada (finge a viagem, sem robo). Com o robo andando
+  de verdade, use o gazebo.launch (Gazebo) ou o sim2d.launch (simulador 2D leve),
+  que incluem este arquivo com navegacao:=real.
 
   Demonstracao automatica (pedidos aleatorios e coleta confirmada sozinha):
     roslaunch garcom_bringup sim.launch
@@ -27,8 +29,13 @@
   <!-- Velocidade media do robo (m/s): a navegacao simulada usa para o tempo das viagens
        e a missao usa para estimar a rota -->
   <arg name="speed" default="1.5"/>
-  <!-- Topico de velocidade: /cmd_vel no Gazebo, /RosAria/cmd_vel no P3-DX real -->
+  <!-- simulada: finge a viagem; real: A* + odometria + laser (Gazebo, simulador 2D ou P3-DX) -->
+  <arg name="navegacao" default="simulada"/>
+  <!-- Topicos do robo: no P3-DX real sao /RosAria/cmd_vel e /RosAria/pose -->
   <arg name="cmd_vel_topic" default="/cmd_vel"/>
+  <arg name="odom_topic" default="/odom"/>
+  <arg name="scan_topic" default="/scan"/>
+  <arg name="mapa" default="$(find garcom_navigation)/maps/restaurante.yaml"/>
 
   <!-- Parametros compartilhados por todos os nos (namespace /garcom) -->
   <param name="garcom/deadline_s" value="$(arg deadline_s)"/>
@@ -46,9 +53,14 @@
     <rosparam command="load" file="$(find garcom_mission)/config/missao.yaml"/>
   </node>
 
-  <!-- Navegacao (Ana) -->
+  <!-- Navegacao: A*, controle e parada/desvio de obstaculos (Ian, cobrindo a parte da Ana) -->
   <node pkg="garcom_navigation" type="navigation_node.py" name="navigation" output="screen">
+    <param name="modo" value="$(arg navegacao)"/>
+    <rosparam command="load" file="$(find garcom_navigation)/config/navegacao.yaml"/>
     <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
+    <param name="odom_topic" value="$(arg odom_topic)"/>
+    <param name="scan_topic" value="$(arg scan_topic)"/>
+    <param name="mapa" value="$(arg mapa)"/>
   </node>
 
   <!-- Tela da estacao de coleta (Ian), em modo automatico -->

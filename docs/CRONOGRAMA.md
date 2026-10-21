@@ -1,27 +1,32 @@
 # Cronograma semanal
 
-Situação em **19/10/2026**. Os marcos podem ser revistos ao longo do semestre, como prevê o plano da disciplina. A demonstração final precisa ser no **P3-DX real**; o Gazebo serve para desenvolver e testar cada parte antes.
+Situação em **21/10/2026**. Os marcos podem ser revistos ao longo do semestre, como prevê o plano da disciplina. A demonstração final precisa ser no **P3-DX real**; o Gazebo serve para desenvolver e testar cada parte antes.
 
-**Mudança em 19/10:** a Mariana saiu da disciplina. O estoque e a interface passaram para o Ian, e a leitura de ArUco foi retirada do projeto com o aval do professor. No lugar dela entrou a **tela da estação**, que mostra o que colocar na bandeja e confirma a coleta.
+**Mudanças:**
+
+- **19/10:** a Mariana saiu da disciplina. O estoque e a interface passaram para o Ian, e a leitura de ArUco foi retirada do projeto com o aval do professor. No lugar dela entrou a **tela da estação**, que mostra o que colocar na bandeja e confirma a coleta.
+- **21/10:** para a Apresentação 2, o **Ian assumiu a simulação e a navegação** (Gazebo, mapa e rota), para aliviar a Ana. Entrou também a **parada e o desvio de obstáculos** pelo laser, pedido pelo professor para o robô não "derrubar tudo". Na Etapa 2, a Ana leva a navegação para o P3-DX real.
 
 **Legenda:** ✅ feito · ⏳ pendente
 
 ## Etapa 1: até a Apresentação 2 (26/10, peso 30)
 
-| Semana | Ian: pedidos, estoque, missões e interfaces | Ana: simulação e navegação |
+| Semana | Pedidos, estoque, missões e interfaces (Ian) | Simulação e navegação (Ana; na parcial, Ian) |
 | --- | --- | --- |
-| 05/10 | ✅ Pacote `garcom_msgs` com as mensagens do projeto e launch subindo todos os nós (`rqt_graph`) | ⏳ P3-DX no Gazebo andando por teleoperação |
-| 12/10 | ✅ Fila de pedidos por ordem de chegada e gerador de pedidos de teste | ⏳ Restaurante no Gazebo (base, estações e mesas) e mapa |
-| 19/10 | ✅ Prazo máximo de entrega: cronômetro por pedido, alerta aos 70% do prazo, atraso e métricas<br>✅ Estoque: reserva dos itens, recusa por falta, aviso de estoque baixo e reposição<br>✅ Telas no navegador: a da mesa (cliente) e a da bancada (funcionário, com ajuste de estoque), no lugar do ArUco | ⏳ Localização e rota entre dois pontos |
-| 26/10 | ⏳ Ajudar a montar o mundo do restaurante no Gazebo<br>⏳ P3-DX real no ROS (RosAria, teleoperação e odometria) | ⏳ Robô indo sozinho no Gazebo entre base, estação e mesa |
+| 05/10 | ✅ Pacote `garcom_msgs` com as mensagens do projeto e launch subindo todos os nós (`rqt_graph`) | ✅ Modelo do P3-DX para o Gazebo, com tração diferencial e laser (plugins da aula 7) |
+| 12/10 | ✅ Fila de pedidos por ordem de chegada e gerador de pedidos de teste | ✅ Restaurante para o Gazebo (base, bancadas, 15 mesas com cadeiras) e mapa, gerados do `pontos.yaml` |
+| 19/10 | ✅ Prazo máximo de entrega: cronômetro por pedido, alerta aos 70% do prazo, atraso e métricas<br>✅ Estoque: reserva dos itens, recusa por falta, aviso de estoque baixo e reposição<br>✅ Telas no navegador: a da mesa (cliente) e a da bancada (funcionário, com ajuste de estoque), no lugar do ArUco | ✅ Rota com A\* no mapa, com margem de segurança em volta dos móveis<br>✅ Controle seguindo a rota com a odometria, com aceleração suave por causa da bandeja |
+| 26/10 | ✅ Vários pedidos por viagem e ordem das paradas otimizada (adiantado da semana 09/11)<br>✅ Escolha da mesa na planta do salão, com 15 mesas<br>⏳ P3-DX real no ROS (RosAria, teleoperação e odometria) | ✅ Parada e desvio de obstáculos pelo laser, com aviso nas telas<br>✅ Simulador 2D leve para testar sem Gazebo<br>⏳ Conferir tudo no Gazebo do computador da equipe |
 
 **Demonstração de 26/10:**
 
-- [ ] Navegação no Gazebo entre base, estação e mesa (Ana, com o mundo montado junto com o Ian)
-- [x] Pedido feito na tela da mesa (navegador), com os itens reservados no estoque e prazo controlado (Ian)
-- [x] Coleta confirmada na tela da bancada, com ajuste de estoque (Ian)
-- [ ] P3-DX real se movendo por comando ROS (Ian)
-- [ ] Resultados e dificuldades encontradas (todos)
+- [x] Pedido feito na tela da mesa (navegador), com os itens reservados no estoque e prazo controlado
+- [x] Viagem com pedidos de várias mesas, coleta confirmada na tela da bancada e entrega mesa por mesa
+- [x] Rota A\* no mapa e robô indo sozinho entre base, bancada e mesa (testado no simulador 2D)
+- [ ] O mesmo no Gazebo, com o RViz mostrando o mapa, o laser e a rota
+- [x] Cliente entrando na frente do robô: ele para, desvia ou espera, e as telas avisam (testado no simulador 2D)
+- [ ] P3-DX real se movendo por comando ROS
+- [ ] Resultados e dificuldades encontradas
 
 ## Etapa 2: até a Apresentação Final (07/12, peso 40)
 
@@ -29,18 +34,18 @@ A partir de 02/11, toda semana algo é testado no P3-DX real, mesmo com o projet
 
 | Semana | Ian | Ana | Marco da equipe |
 | --- | --- | --- | --- |
-| 02/11 | Missão usando a navegação real do Gazebo; sensores e odometria do P3-DX real conferidos | Pontos nomeados no `pontos.yaml` e ação `GoToPoint` movendo o robô de verdade | Primeiro pedido completo no Gazebo |
-| 09/11 | Vários pedidos por viagem (capacidade da bandeja) e prazo por item | Mapa do laboratório feito com o P3-DX real | Fila com vários pedidos; mapa real |
-| 16/11 | Telas abertas no celular ou tablet pela rede do laboratório e ajustes de uso com testes reais | Navegação A* no P3-DX real | Navegação no robô real; telas web |
-| 23/11 | Launch do robô real e tratamento de falhas; primeiro pedido completo no laboratório | Ajustes de navegação no ciclo completo | Ciclo completo no Gazebo e primeiro ciclo no robô real |
-| 30/11 | Ciclo completo no P3-DX real com vários pedidos e métricas | Ajustes finais no robô real e vídeos da demo | Demo ensaiada; rascunho do relatório |
-| 07/12 | Pedidos, estoque, missões e telas no relatório; README final; slides | Simulação e navegação no relatório; vídeo final | Demo completa, relatório de 8 a 10 páginas e apresentação |
+| 02/11 | P3-DX real no ROS: RosAria, laser SICK e teleoperação; launch do robô real com os tópicos `/RosAria/cmd_vel` e `/RosAria/pose` | Mapa do laboratório com o `gmapping` (andando com o joystick) | Robô real andando por comando ROS; mapa do laboratório |
+| 09/11 | Parada por obstáculo no P3-DX real, com o laser de verdade | Localização no mapa do laboratório (AMCL) e pontos do laboratório no `pontos.yaml` | Robô real indo a um ponto e parando diante de uma pessoa |
+| 16/11 | Telas abertas no celular ou tablet pela rede do laboratório | Ajustes da navegação no robô real (velocidade, margens, desvio) | Primeiro pedido completo no laboratório |
+| 23/11 | Tratamento de falhas (rota impossível, robô travado, bancada sem resposta) | Ajustes de navegação com vários pedidos | Ciclo completo no robô real com vários pedidos |
+| 30/11 | Métricas no robô real (tempo médio, % no prazo) | Vídeos da demo e ajustes finais | Demo ensaiada; rascunho do relatório |
+| 07/12 | Pedidos, estoque, missões e telas no relatório; README final; slides | Navegação no robô real no relatório; vídeo final | Demo completa, relatório de 8 a 10 páginas e apresentação |
 
 **Demonstração de 07/12:**
 
 - [ ] Ciclo completo: pedido na tela da mesa → coleta confirmada na estação → entrega na mesa
-- [ ] Vários pedidos com prioridade e alerta de atraso
-- [ ] Demo no P3-DX real (obrigatória)
+- [ ] Vários pedidos por viagem, com prioridade e alerta de atraso
+- [ ] Demo no P3-DX real (obrigatória), parando diante de obstáculos
 - [ ] Métricas: tempo médio de entrega e % de pedidos no prazo
 - [ ] Relatório de 8 a 10 páginas, README com instruções e vídeos por marco
 

@@ -1,0 +1,28 @@
+# Ajustes da navegacao real (navigation_node.py com modo: real).
+# Carregado pelo sim.launch quando navegacao:=real.
+
+# Movimento (suave por causa da bandeja)
+velocidade_max: 0.45        # m/s
+velocidade_giro: 1.0        # rad/s
+aceleracao: 0.4             # m/s^2 para ganhar velocidade
+freio: 0.8                  # m/s^2 numa parada normal
+freio_emergencia: 1.5       # m/s^2 quando aparece um obstaculo
+olhar_a_frente: 0.5         # m: ponto da rota que o robo persegue (pure pursuit)
+tolerancia: 0.08            # m: chegou no ponto
+tolerancia_giro: 0.06       # rad: ficou virado para a mesa
+
+# Tamanho do robo e margem de seguranca do A*
+raio_robo: 0.30             # o centro do robo nunca passa mais perto que isso de um obstaculo
+raio_conforto: 0.70         # entre 0.30 e 0.70 pode passar, mas o A* prefere longe
+peso_conforto: 3.0          # quanto o A* "paga" para passar perto de obstaculos
+margem_pessoas: 0.15        # m a mais de folga para obstaculos vistos pelo laser (pessoas)
+
+# Obstaculos (laser)
+frente_do_robo: 0.25        # m do centro ate o para-choque
+largura_checagem: 0.27      # m: meia largura do corredor checado na frente do robo
+distancia_reduzir: 1.2      # m: comeca a desacelerar quando ha algo a essa distancia
+distancia_parada: 0.45      # m: para quando ha algo a essa distancia do para-choque
+espera_obstaculo_s: 3.0     # s parado esperando o obstaculo sair antes de desviar
+validade_obstaculo_s: 20.0  # s que um obstaculo visto fica marcado no mapa
+laser_x: 0.15               # m: posicao do laser a frente do centro do robo
+laser_invertido: false      # true se o laser estiver montado de cabeca para baixo

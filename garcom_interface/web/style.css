@@ -381,6 +381,7 @@ button { font: inherit; color: inherit; }
 .track-time strong { color: var(--ink); font-size: 22px; }
 
 .track-note { margin: 0 0 18px; font-weight: 600; color: var(--warn); }
+.track-pause { margin: -8px 0 18px; font-weight: 600; color: var(--ink-soft); }
 
 .track-items {
   margin: 18px 0 28px;
@@ -521,6 +522,19 @@ button { font: inherit; color: inherit; }
 }
 
 .trip h2 { margin: 0; }
+
+.trip-alert {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-left: 5px solid var(--late);
+  border-radius: 10px;
+  background: #fbe9e7;
+  color: var(--late);
+  font-weight: 700;
+}
+
+.trip-alert span { font-weight: 500; }
+.trip-alert.is-soft { border-left-color: var(--mustard); background: #fdf3da; color: var(--warn); }
 .trip-meta, .trip-idle { margin: 2px 0 0; color: var(--ink-soft); }
 
 .trip-stops {

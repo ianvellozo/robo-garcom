@@ -9,8 +9,9 @@ Liga o ROS ao navegador. Abra no navegador do mesmo computador:
   (?estacao=estacao_cafe mostra só os pedidos daquela estação)
 
 Por baixo, o nó publica em /garcom/orders e /garcom/pickup_done, escuta
-/garcom/order_status, /garcom/pickup_request, /garcom/trip e /garcom/stock,
-e usa o serviço /garcom/set_stock. As páginas ficam na pasta web/ deste pacote.
+/garcom/order_status, /garcom/pickup_request, /garcom/trip, /garcom/stock e
+/garcom/nav_state (robô parado por obstáculo), e usa o serviço /garcom/set_stock.
+As páginas ficam na pasta web/ deste pacote.
 """
 import json
 import os
@@ -22,6 +23,7 @@ import rospkg
 import rospy
 from garcom_msgs.msg import Order, OrderStatus, PickupDone, PickupRequest, StockLevels, Trip
 from garcom_msgs.srv import SetStock
+from std_msgs.msg import String
 
 STATUS_KEYS = {
     OrderStatus.RECEBIDO: "recebido",
@@ -54,6 +56,7 @@ class Bridge:
                        "tipo": "mesa" if name.startswith("mesa_") else ("base" if name == "base" else "bancada")}
                       for name, p in points.items()]
         self.trip = None
+        self.nav = {"estado": "parado", "desde": rospy.Time.now().to_sec()}
 
         self.lock = threading.Lock()
         self.stock = {}
@@ -67,6 +70,7 @@ class Bridge:
         rospy.Subscriber("/garcom/pickup_request", PickupRequest, self.on_pickup)
         rospy.Subscriber("/garcom/trip", Trip, self.on_trip)
         rospy.Subscriber("/garcom/pickup_done", PickupDone, self.on_pickup_done)
+        rospy.Subscriber("/garcom/nav_state", String, self.on_nav)
         self.set_stock_srv = rospy.ServiceProxy("/garcom/set_stock", SetStock)
 
     def point_name(self, name):
@@ -125,6 +129,11 @@ class Bridge:
             self.pickups = [p for p in self.pickups
                             if not (p["viagem"] == msg.trip_id and p["estacao"] == msg.station)]
 
+    def on_nav(self, msg):
+        with self.lock:
+            if msg.data != self.nav["estado"]:
+                self.nav = {"estado": msg.data, "desde": rospy.Time.now().to_sec()}
+
     def on_trip(self, msg):
         with self.lock:
             self.trip = {
@@ -155,6 +164,7 @@ class Bridge:
                 "estacoes": self.stations,
                 "planta": self.floor,
                 "viagem": self.trip,
+                "robo": {"estado": self.nav["estado"], "ha_s": round(now - self.nav["desde"], 1)},
                 "pedidos": orders,
                 "coletas": [dict(p, esperando_s=round(now - p["desde"], 1)) for p in self.pickups],
             }

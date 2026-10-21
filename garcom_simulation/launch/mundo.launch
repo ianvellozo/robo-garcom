@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+  Restaurante no Gazebo com o P3-DX do Robo Garcom (laser na frente e bandeja em cima).
+  Sozinho, so abre o mundo; para o sistema completo use:
+    roslaunch garcom_bringup gazebo.launch
+  Para andar com o teclado (teste da aula 7):
+    rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+-->
+<launch>
+  <arg name="gui" default="true"/>
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="yaw" default="0.0"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find garcom_simulation)/worlds/restaurante.world"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+  </include>
+
+  <!-- descricao do robo (xacro -> URDF) e spawn no mundo -->
+  <param name="robot_description"
+         command="$(find xacro)/xacro '$(find garcom_simulation)/urdf/p3dx_garcom.urdf.xacro'"/>
+  <node name="spawn_p3dx" pkg="gazebo_ros" type="spawn_model" output="screen"
+        args="-urdf -param robot_description -model p3dx -x $(arg x) -y $(arg y) -z 0.1 -Y $(arg yaw)"/>
+
+  <!-- TF das pecas do robo e do mapa (o mapa coincide com a odometria no simulador) -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  <node name="mapa_para_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 map odom"/>
+</launch>
