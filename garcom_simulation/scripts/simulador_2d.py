@@ -76,18 +76,25 @@ class Simulador:
             self.ultimo_cmd = rospy.get_time()
 
     def on_obstaculo(self, msg):
-        texto = msg.data.strip().lower()
+        """'x y [nome]' poe um cliente; 'tirar [nome]' ou 'limpar' tira (um ou todos)."""
+        partes = msg.data.strip().replace(",", " ").split()
+        if not partes:
+            return
         with self.lock:
-            if texto in ("limpar", "tirar"):
-                self.clientes = []
-                rospy.loginfo("Clientes retirados do salao.")
+            if partes[0].lower() in ("limpar", "tirar"):
+                if len(partes) > 1:
+                    self.clientes = [c for c in self.clientes if c.nome != partes[1]]
+                    rospy.loginfo("%s saiu do salao.", partes[1])
+                else:
+                    self.clientes = []
+                    rospy.loginfo("Clientes retirados do salao.")
                 return
             try:
-                x, y = (float(v) for v in texto.replace(",", " ").split()[:2])
-            except ValueError:
-                rospy.logwarn("Obstaculo invalido: '%s' (use 'x y' ou 'limpar')", msg.data)
+                x, y = float(partes[0]), float(partes[1])
+            except (ValueError, IndexError):
+                rospy.logwarn("Obstaculo invalido: '%s' (use 'x y', 'tirar' ou 'limpar')", msg.data)
                 return
-            nome = "cliente_%d" % (len(self.clientes) + 1)
+            nome = partes[2] if len(partes) > 2 else "cliente_%d" % (len(self.clientes) + 1)
             self.clientes.append(restaurante.Cilindro(nome, x, y, self.raio_cliente, 1.6, tipo="cliente"))
         rospy.loginfo("Cliente em pe em (%.2f, %.2f).", x, y)
 

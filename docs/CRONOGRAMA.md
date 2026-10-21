@@ -5,26 +5,25 @@ Situação em **21/10/2026**. Os marcos podem ser revistos ao longo do semestre,
 **Mudanças:**
 
 - **19/10:** a Mariana saiu da disciplina. O estoque e a interface passaram para o Ian, e a leitura de ArUco foi retirada do projeto com o aval do professor. No lugar dela entrou a **tela da estação**, que mostra o que colocar na bandeja e confirma a coleta.
-- **21/10:** para a Apresentação 2, o **Ian assumiu a simulação e a navegação** (Gazebo, mapa e rota), para aliviar a Ana. Entrou também a **parada e o desvio de obstáculos** pelo laser, pedido pelo professor para o robô não "derrubar tudo". Na Etapa 2, a Ana leva a navegação para o P3-DX real.
+- **21/10:** entrou a **parada e o desvio de obstáculos** pelo laser, pedido pelo professor para o robô não "derrubar tudo".
 
 **Legenda:** ✅ feito · ⏳ pendente
 
 ## Etapa 1: até a Apresentação 2 (26/10, peso 30)
 
-| Semana | Pedidos, estoque, missões e interfaces (Ian) | Simulação e navegação (Ana; na parcial, Ian) |
+| Semana | Ian: pedidos, estoque, missões e interfaces | Ana: simulação e navegação |
 | --- | --- | --- |
 | 05/10 | ✅ Pacote `garcom_msgs` com as mensagens do projeto e launch subindo todos os nós (`rqt_graph`) | ✅ Modelo do P3-DX para o Gazebo, com tração diferencial e laser (plugins da aula 7) |
 | 12/10 | ✅ Fila de pedidos por ordem de chegada e gerador de pedidos de teste | ✅ Restaurante para o Gazebo (base, bancadas, 15 mesas com cadeiras) e mapa, gerados do `pontos.yaml` |
 | 19/10 | ✅ Prazo máximo de entrega: cronômetro por pedido, alerta aos 70% do prazo, atraso e métricas<br>✅ Estoque: reserva dos itens, recusa por falta, aviso de estoque baixo e reposição<br>✅ Telas no navegador: a da mesa (cliente) e a da bancada (funcionário, com ajuste de estoque), no lugar do ArUco | ✅ Rota com A\* no mapa, com margem de segurança em volta dos móveis<br>✅ Controle seguindo a rota com a odometria, com aceleração suave por causa da bandeja |
-| 26/10 | ✅ Vários pedidos por viagem e ordem das paradas otimizada (adiantado da semana 09/11)<br>✅ Escolha da mesa na planta do salão, com 15 mesas<br>⏳ P3-DX real no ROS (RosAria, teleoperação e odometria) | ✅ Parada e desvio de obstáculos pelo laser, com aviso nas telas<br>✅ Simulador 2D leve para testar sem Gazebo<br>⏳ Conferir tudo no Gazebo do computador da equipe |
+| 26/10 | ✅ Vários pedidos por viagem e ordem das paradas otimizada (adiantado da semana 09/11)<br>✅ Pedido novo entrando no meio da viagem, enquanto o robô ainda está nas bancadas<br>✅ Escolha da mesa na planta do salão, com 15 mesas<br>⏳ P3-DX real no ROS (RosAria, teleoperação e odometria) | ✅ Parada, desvio e ré curta diante de obstáculos pelo laser, com aviso nas telas<br>✅ Simulador 2D leve para testar sem Gazebo<br>✅ Tudo conferido no Gazebo e no RViz do computador da equipe |
 
 **Demonstração de 26/10:**
 
 - [x] Pedido feito na tela da mesa (navegador), com os itens reservados no estoque e prazo controlado
 - [x] Viagem com pedidos de várias mesas, coleta confirmada na tela da bancada e entrega mesa por mesa
-- [x] Rota A\* no mapa e robô indo sozinho entre base, bancada e mesa (testado no simulador 2D)
-- [ ] O mesmo no Gazebo, com o RViz mostrando o mapa, o laser e a rota
-- [x] Cliente entrando na frente do robô: ele para, desvia ou espera, e as telas avisam (testado no simulador 2D)
+- [x] Rota A\* no mapa e robô indo sozinho entre base, bancada e mesa, no Gazebo, com o RViz mostrando o mapa, o laser e a rota
+- [x] Cliente entrando na frente do robô: ele para, desvia, espera ou dá ré, e as telas avisam
 - [ ] P3-DX real se movendo por comando ROS
 - [ ] Resultados e dificuldades encontradas
 

@@ -34,7 +34,8 @@ class StationPanel:
         return ", ".join("%d x %s" % (q, self.names.get(i, i)) for i, q in zip(items, quantities))
 
     def show(self, req):
-        print("\n************ %s - viagem %d ************" % (self.stations.get(req.station, req.station), req.trip_id))
+        print("\n************ %s - viagem %d%s ************" % (
+            self.stations.get(req.station, req.station), req.trip_id, " (mais itens)" if req.extra else ""))
         print("Coloque na bandeja:")
         for item, qty in zip(req.items, req.quantities):
             print("   %d x %s" % (qty, self.names.get(item, item)))
@@ -55,8 +56,8 @@ class StationPanel:
             else:
                 self.show(req)
                 input("Aperte ENTER quando a bandeja estiver pronta... ")
-            self.pub.publish(PickupDone(trip_id=req.trip_id, station=req.station))
-            rospy.loginfo("Coleta confirmada: viagem %d em %s", req.trip_id, req.station)
+            self.pub.publish(PickupDone(ticket_id=req.ticket_id, trip_id=req.trip_id, station=req.station))
+            rospy.loginfo("Coleta confirmada: viagem %d em %s (comanda %d)", req.trip_id, req.station, req.ticket_id)
 
 
 def main():

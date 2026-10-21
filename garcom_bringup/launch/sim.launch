@@ -53,7 +53,7 @@
     <rosparam command="load" file="$(find garcom_mission)/config/missao.yaml"/>
   </node>
 
-  <!-- Navegacao: A*, controle e parada/desvio de obstaculos (Ian, cobrindo a parte da Ana) -->
+  <!-- Navegacao: A*, controle e parada/desvio de obstaculos (Ana) -->
   <node pkg="garcom_navigation" type="navigation_node.py" name="navigation" output="screen">
     <param name="modo" value="$(arg navegacao)"/>
     <rosparam command="load" file="$(find garcom_navigation)/config/navegacao.yaml"/>

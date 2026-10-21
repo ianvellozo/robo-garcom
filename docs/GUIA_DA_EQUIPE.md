@@ -22,9 +22,9 @@ Este guia é para quem nunca mexeu com ROS, Linux ou Git. Siga na ordem.
 1. Na **tela da mesa** (no navegador), o cliente escolhe os itens. O pedido sai em `/garcom/orders`.
 2. A **fila** pede ao **estoque** para reservar os itens. Se faltar algum, o pedido é recusado.
 3. A fila controla o **prazo máximo de entrega**: avisa quando o pedido passa de 70% do prazo e marca como atrasado se passar do prazo.
-4. O **gerente de missões** monta uma **viagem**: pega os pedidos mais urgentes que cabem na bandeja (até 8 itens e 5 mesas), soma os itens por bancada e escolhe a melhor ordem de paradas, equilibrando a mesa mais perto e o pedido mais atrasado.
+4. O **gerente de missões** monta uma **viagem**: pega os pedidos mais urgentes que cabem na bandeja (até 8 itens e 5 mesas), soma os itens por bancada e escolhe a melhor ordem de paradas, equilibrando a mesa mais perto e o pedido mais atrasado. Enquanto o robô ainda está nas bancadas, pedido novo que cabe na bandeja entra na mesma viagem.
 5. Para cada parada, a **navegação** calcula a rota com A\* no mapa e leva o robô até lá, de olho no laser.
-6. Em cada bancada, a **tela da bancada** mostra o total ("2 × Café, 3 × Suco") e como separar por mesa. O funcionário monta e aperta **Bandeja pronta**.
+6. Em cada bancada, a **tela da bancada** mostra o total ("2 × Café, 3 × Suco") e como separar por mesa. O funcionário monta e aperta **Bandeja pronta**. Se entrou pedido novo enquanto o robô estava ali, aparece logo em seguida uma comanda extra marcada com "+ itens".
 7. O robô entrega mesa por mesa. Se tiver mais pedidos esperando, já sai para a próxima viagem; se não, volta para a base. Cada mudança de estado do pedido sai em `/garcom/order_status`.
 
 | Nó | Responsável | Hoje |
@@ -34,8 +34,8 @@ Este guia é para quem nunca mexeu com ROS, Linux ou Git. Siga na ordem.
 | `stock_server` (estoque) | Ian | Pronto |
 | `web_server` (telas da mesa e da bancada no navegador) | Ian | Pronto |
 | `interface` e `station_panel` (as mesmas telas no terminal) | Ian | Pronto |
-| `navigation` (A\*, controle, parada e desvio) | Ian na parcial; Ana no robô real | Pronto no Gazebo e no simulador 2D |
-| Gazebo (`mundo.launch`) e `simulador_2d` | Ian na parcial; Ana no robô real | Pronto |
+| `navigation` (A\*, controle, parada e desvio) | Ana | Pronto no Gazebo e no simulador 2D |
+| Gazebo (`mundo.launch`) e `simulador_2d` | Ana | Pronto |
 
 A leitura de marcadores ArUco foi retirada do projeto, com o aval do professor, depois que a Mariana saiu da disciplina. A tela da estação ocupa esse lugar.
 
@@ -97,6 +97,7 @@ Os pedidos aparecem sozinhos (um a cada 20 ou 30 s) e a bandeja é confirmada so
 | `rosrun garcom_simulation obstaculo.py` | Aparece um cliente em pé na rota, 1,5 m à frente do robô. Ele vê pelo laser e desvia sem precisar parar. |
 | `rosrun garcom_simulation obstaculo.py frente 0.8` | O cliente aparece bem perto: o robô freia na hora, depois acha outro caminho. |
 | `rosrun garcom_simulation obstaculo.py 8 0` | Cliente no ponto x = 8, y = 0 (é onde o robô para para atender a mesa 9). Se o robô estiver indo para lá, ele para antes e espera. |
+| `rosrun garcom_simulation obstaculo.py tempo 30` | O cliente fica 30 s. Sem isso ele vai embora sozinho em 15 s, como uma pessoa de verdade (`tempo 0` = fica até tirar). |
 | `rosrun garcom_simulation obstaculo.py tirar` | Tira todos os clientes; o robô continua. |
 
 No Gazebo também dá para pôr uma caixa na frente do robô pelo menu de cima (cubo) e arrastar.
@@ -114,9 +115,9 @@ Outros jeitos de rodar:
 
 ---
 
-## 6. Simulação e navegação
+## 6. Parte da Ana: simulação e navegação
 
-Na Apresentação 2 (26/10), o Ian cobriu esta parte para aliviar a Ana. Daqui para frente, a Ana leva isso para o P3-DX real (veja o cronograma).
+Pronto no Gazebo e no simulador 2D. O próximo passo é levar para o P3-DX real (veja o cronograma).
 
 ### Arquivos
 
@@ -145,10 +146,11 @@ Cada mesa fica 75 cm à frente do ponto onde o robô para (na direção do `yaw`
    - algo a menos de 1,2 m: **desacelera**;
    - algo a menos de 45 cm do para-choque: **para** (freio forte);
    - parado há 3 s e o obstáculo continua: marca no mapa e procura **outro caminho**;
-   - sem outro caminho (por exemplo, a pessoa está no ponto da mesa): **espera** ela sair e segue.
+   - sem outro caminho (por exemplo, a pessoa está no ponto da mesa): **espera** ela sair e segue;
+   - alguém encostado na frente (a menos de 15 cm do para-choque): **dá ré** devagar, até 40 cm. Como o laser só vê a frente, antes ele confere no mapa se atrás está livre.
 
    As marcas somem depois de 20 s ou quando o laser olha de novo e não vê mais nada lá. Pessoas ganham 15 cm a mais de margem que os móveis.
-6. **Estado:** a navegação publica em `/garcom/nav_state` se está `andando`, `desviando`, `obstaculo` (parado), `sem_caminho` (esperando) ou `parado`. As telas da bancada e da mesa mostram o aviso.
+6. **Estado:** a navegação publica em `/garcom/nav_state` se está `andando`, `desviando`, `obstaculo` (parado), `recuando` (dando ré), `sem_caminho` (esperando) ou `parado`. As telas da bancada e da mesa mostram o aviso.
 
 ### Para o P3-DX real (próximas semanas)
 

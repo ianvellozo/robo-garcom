@@ -24,7 +24,7 @@ function pendingPickups() {
   return state.coletas.filter((c) => (!station || c.estacao === station) && !confirming.has(keyOf(c)));
 }
 
-const keyOf = (c) => `${c.viagem}:${c.estacao}`;
+const keyOf = (c) => String(c.comanda);
 
 function renderTickets() {
   const area = $("ticketArea");
@@ -53,8 +53,8 @@ function renderTickets() {
     area.innerHTML = `
       <div class="ticket-wrap ${more ? "has-more" : ""}">
         <article class="ticket">
-          <div class="ticket-head"><span>Viagem ${c.viagem}</span><span>${tables.length === 1 ? `Mesa ${tables[0]}` : `${tables.length} mesas`}</span></div>
-          <p class="ticket-station">${c.estacao_nome}</p>
+          <div class="ticket-head"><span>Viagem ${c.viagem}${c.extra ? " <em>+ itens</em>" : ""}</span><span>${tables.length === 1 ? `Mesa ${tables[0]}` : `${tables.length} mesas`}</span></div>
+          <p class="ticket-station">${c.estacao_nome}${c.extra ? ": pedido novo entrou na viagem" : ""}</p>
           <ul class="ticket-items">
             ${c.itens.map((i) => `<li><span class="qty">${i.qtd}</span><span>× ${names[i.item] || i.item}</span></li>`).join("")}
           </ul>
@@ -78,7 +78,7 @@ async function confirmPickup(c) {
   shownTicket = "";
   renderTickets();
   try {
-    await api.post("/api/bandeja_pronta", { viagem: c.viagem, estacao: c.estacao });
+    await api.post("/api/bandeja_pronta", { comanda: c.comanda });
     toast(`Bandeja da viagem ${c.viagem} liberada`);
   } catch (e) {
     toast(e.message);
@@ -108,6 +108,7 @@ const NAV_ALERTS = {
   obstaculo: { cls: "", text: "Robô parado: tem algo no caminho." },
   sem_caminho: { cls: "", text: "Robô esperando: o caminho está bloqueado." },
   desviando: { cls: "is-soft", text: "Robô desviando de um obstáculo." },
+  recuando: { cls: "", text: "Robô dando ré: tinha algo encostado na frente." },
 };
 
 function navAlert() {

@@ -457,6 +457,16 @@ button { font: inherit; color: inherit; }
 
 .ticket-station { margin: 2px 0 0; font-size: 18px; color: var(--ink-soft); }
 
+.ticket-head em {
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--mustard);
+  font-size: 18px;
+  font-style: normal;
+  vertical-align: middle;
+}
+
 .ticket-items {
   margin: 20px 0;
   padding: 18px 0;

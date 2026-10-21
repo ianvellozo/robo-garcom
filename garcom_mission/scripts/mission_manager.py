@@ -12,8 +12,14 @@ pedido por vez, junta vários pedidos e entrega todos numa volta só.
      previsto. Assim a rota equilibra a mesa mais perto e a mais atrasada.
      Com até 7 mesas testa todas as ordens possíveis; acima disso, escolhe
      a próxima mesa de menor custo a cada passo.
-  4. Passa uma vez em cada bancada (/garcom/pickup_request) e espera a
-     confirmação de que a bandeja está pronta (/garcom/pickup_done).
+  4. Passa em cada bancada (/garcom/pickup_request) e espera a confirmação de
+     que a bandeja está pronta (/garcom/pickup_done).
+     Enquanto o robô ainda está nas bancadas, pedidos novos que cabem na
+     bandeja entram na viagem (como o garçom que ouve "e mais um café para a
+     mesa 15" antes de sair da cozinha). Se precisarem de uma bancada que
+     ainda vai ser visitada, os itens vão na mesma comanda; se for a bancada
+     onde o robô está, sai uma comanda extra ali mesmo; se for uma bancada que
+     já ficou para trás, o robô volta nela. A rota é replanejada.
   5. Entrega mesa por mesa e, se houver pedidos esperando, já emenda a
      próxima viagem; se não, volta para a base.
 
@@ -68,7 +74,8 @@ class MissionManager:
 
         self.here = self.base
         self.trip_id = 0
-        self.confirmed = set()   # (viagem, estação) confirmados pela tela da bancada
+        self.ticket_id = 0
+        self.confirmed = set()   # comandas confirmadas pela tela da bancada
         self.confirm_lock = threading.Condition()
 
         self.status_pub = rospy.Publisher("/garcom/order_status", OrderStatus, queue_size=50)
@@ -89,7 +96,7 @@ class MissionManager:
     # ------------------------------------------------------------ apoio
     def on_pickup_done(self, msg):
         with self.confirm_lock:
-            self.confirmed.add((msg.trip_id, msg.station))
+            self.confirmed.add(msg.ticket_id)
             self.confirm_lock.notify_all()
 
     def publish_status(self, order, status, stops_before=0):
@@ -174,11 +181,12 @@ class MissionManager:
         return best
 
     # ------------------------------------------------------------ coleta
-    def collect(self, station, totals, lines):
-        """Pede a coleta na bancada e espera a confirmação."""
-        key = (self.trip_id, station)
+    def collect(self, station, totals, lines, extra=False):
+        """Pede a coleta na bancada (uma comanda) e espera a confirmação."""
+        self.ticket_id += 1
+        key = self.ticket_id
         self.pickup_pub.publish(PickupRequest(
-            trip_id=self.trip_id, station=station,
+            ticket_id=key, trip_id=self.trip_id, station=station, extra=extra,
             items=list(totals.keys()), quantities=list(totals.values()), lines=lines))
 
         deadline = rospy.Time.now() + rospy.Duration(self.pickup_timeout)
@@ -193,61 +201,116 @@ class MissionManager:
         return ok
 
     # ------------------------------------------------------------ viagem
-    def execute_trip(self, orders):
-        self.trip_id += 1
-
-        # itens de cada estação: total e divisão por pedido
-        totals = OrderedDict()
-        per_order = OrderedDict()
+    def add_items(self, pending, orders):
+        """Acrescenta os itens dos pedidos em pending: bancada -> {pedido: (pedido, itens)}."""
         for o in orders:
             for item in o.items:
                 station = self.station_of.get(item)
                 if station is None:
                     rospy.logwarn("Item '%s' não está no cardápio; ignorado", item)
                     continue
-                totals.setdefault(station, Counter())[item] += 1
-                per_order.setdefault(station, OrderedDict()).setdefault(o.id, (o, Counter()))[1][item] += 1
+                entry = pending.setdefault(station, OrderedDict()).setdefault(o.id, (o, Counter()))
+                entry[1][item] += 1
 
-        stations, tables, cost, estimated, fifo_cost = self.plan_trip(orders, list(totals))
-        stops = stations + tables
-        trip = Trip(trip_id=self.trip_id, stops=stops, current=-1, finished=False,
-                    order_ids=[o.id for o in orders], estimated_s=estimated)
+    def try_merge(self, trip_orders, pending):
+        """Pedidos novos entram na viagem se couberem na bandeja (robô ainda nas bancadas)."""
+        free = self.capacity - sum(len(o.items) for o in trip_orders)
+        if free <= 0 or not self.waiting():
+            return []
+        tables = sorted({o.table_id for o in trip_orders})
+        try:
+            resp = self.next_orders(max_items=free, max_tables=self.max_tables, take=True,
+                                    tables_in_trip=tables)
+        except rospy.ServiceException as err:
+            rospy.logwarn("Fila indisponível: %s", err)
+            return []
+        new = list(resp.orders)
+        if new:
+            trip_orders.extend(new)
+            self.add_items(pending, new)
+            for o in new:
+                self.publish_status(o, OrderStatus.EM_COLETA)
+            rospy.loginfo("Viagem %d: entrou no meio da viagem o pedido %s (bandeja com %d de %d itens)",
+                          self.trip_id, ", ".join("%d da mesa %d" % (o.id, o.table_id) for o in new),
+                          sum(len(o.items) for o in trip_orders), self.capacity)
+        return new
+
+    def publish_trip(self, trip, done_stops, stations, pending, tables, trip_orders, estimated):
+        remaining = [st for st in stations if st in pending]
+        trip.stops = done_stops + remaining + tables
+        trip.current = len(done_stops)
+        trip.order_ids = [o.id for o in trip_orders]
+        trip.estimated_s = estimated
         self.trip_pub.publish(trip)
 
-        n_items = sum(len(o.items) for o in orders)
+    def execute_trip(self, orders):
+        self.trip_id += 1
+        trip_orders = list(orders)
+        pending = OrderedDict()       # itens que ainda faltam pegar, por bancada
+        self.add_items(pending, trip_orders)
+
+        stations, tables, cost, estimated, fifo_cost = self.plan_trip(trip_orders, list(pending))
+        n_items = sum(len(o.items) for o in trip_orders)
         rospy.loginfo("Viagem %d: %d pedido(s), %d item(ns). Rota: %s. Tempo estimado: %.0f s",
-                      self.trip_id, len(orders), n_items, " -> ".join(stops), estimated)
+                      self.trip_id, len(trip_orders), n_items, " -> ".join(stations + tables), estimated)
         if len(tables) > 1:
             rospy.loginfo("Viagem %d: custo da rota escolhida %.0f; na ordem de chegada seria %.0f",
                           self.trip_id, cost, fifo_cost)
-
-        for o in orders:
+        for o in trip_orders:
             self.publish_status(o, OrderStatus.EM_COLETA)
 
-        # bancadas
-        for idx, station in enumerate(stations):
-            trip.current = idx
-            self.trip_pub.publish(trip)
+        trip = Trip(trip_id=self.trip_id, finished=False)
+        done_stops, served = [], set()
+
+        def replan():
+            """Entrou pedido novo: refaz a ordem das paradas e avisa as telas na hora."""
+            nonlocal stations, tables, estimated
+            stations, tables, _, estimated, _ = self.plan_trip(trip_orders, list(pending))
+            self.publish_trip(trip, done_stops, stations, pending, tables, trip_orders, estimated)
+            rospy.loginfo("Viagem %d: nova rota com os pedidos que entraram: %s",
+                          self.trip_id, " -> ".join([st for st in stations if st in pending] + tables))
+
+        # bancadas (aqui ainda podem entrar pedidos novos)
+        while pending:
+            station = next((st for st in stations if st in pending), next(iter(pending)))
+            self.publish_trip(trip, done_stops, stations, pending, tables, trip_orders, estimated)
             if not self.go_to(station):
                 rospy.logerr("Não foi possível chegar em %s", station)
-                continue  # TODO(Ian, 23/11): tratamento de falhas
-            lines = [PickupLine(order_id=o.id, table_id=o.table_id,
-                                items=list(c.keys()), quantities=list(c.values()))
-                     for o, c in per_order[station].values()]
-            text = ", ".join("%dx %s" % (q, i) for i, q in totals[station].items())
-            if self.collect(station, totals[station], lines):
-                rospy.loginfo("Viagem %d: coleta confirmada em %s: %s", self.trip_id, station, text)
-            else:
-                rospy.logwarn("Viagem %d: coleta em %s não confirmada em %.0f s; seguindo assim mesmo",
-                              self.trip_id, station, self.pickup_timeout)
+                pending.pop(station, None)  # TODO(Ian, 23/11): tratamento de falhas
+                done_stops.append(station)
+                continue
+            if self.try_merge(trip_orders, pending):  # chegou: pedidos novos vão na mesma comanda
+                replan()
+            while station in pending:
+                per_order = pending.pop(station)
+                totals = Counter()
+                for _, c in per_order.values():
+                    totals.update(c)
+                lines = [PickupLine(order_id=o.id, table_id=o.table_id,
+                                    items=list(c.keys()), quantities=list(c.values()))
+                         for o, c in per_order.values()]
+                text = ", ".join("%dx %s" % (q, i) for i, q in totals.items())
+                extra = station in served
+                if self.collect(station, totals, lines, extra):
+                    rospy.loginfo("Viagem %d: coleta confirmada em %s: %s%s", self.trip_id, station, text,
+                                  " (comanda extra)" if extra else "")
+                else:
+                    rospy.logwarn("Viagem %d: coleta em %s não confirmada em %.0f s; seguindo assim mesmo",
+                                  self.trip_id, station, self.pickup_timeout)
+                served.add(station)
+                # antes de sair da bancada, confere se chegou pedido novo
+                if self.try_merge(trip_orders, pending):
+                    replan()
+            done_stops.append(station)
 
         # mesas
-        by_table = OrderedDict((t, [o for o in orders if "mesa_%d" % o.table_id == t]) for t in tables)
+        self.publish_trip(trip, done_stops, stations, pending, tables, trip_orders, estimated)
+        by_table = OrderedDict((t, [o for o in trip_orders if "mesa_%d" % o.table_id == t]) for t in tables)
         for k, table in enumerate(tables):
             for later_k, later in enumerate(tables[k:]):
                 for o in by_table[later]:
                     self.publish_status(o, OrderStatus.EM_ENTREGA, stops_before=later_k)
-            trip.current = len(stations) + k
+            trip.current = len(done_stops) + k
             self.trip_pub.publish(trip)
             if not self.go_to(table):
                 rospy.logerr("Não foi possível chegar na %s", table)
@@ -258,7 +321,7 @@ class MissionManager:
                 rospy.loginfo("Pedido %d entregue na %s", o.id, table)
 
         trip.finished = True
-        trip.current = len(stops)
+        trip.current = len(trip.stops)
         self.trip_pub.publish(trip)
 
     # ------------------------------------------------------------- laço

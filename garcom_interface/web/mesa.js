@@ -219,7 +219,7 @@ function renderTrack() {
   $("trackMsg").textContent = msg;
   moveRobot(pos, stage.reached);
   const moving = order.status === "em_coleta" || order.status === "em_entrega";
-  const paused = state.robo && (state.robo.estado === "obstaculo" || state.robo.estado === "sem_caminho");
+  const paused = state.robo && ["obstaculo", "sem_caminho", "recuando"].includes(state.robo.estado);
   $("trackPause").hidden = !(moving && paused);
 
   const done = order.status === "entregue";

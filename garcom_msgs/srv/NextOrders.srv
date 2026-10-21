@@ -1,9 +1,12 @@
 # Pede a fila os proximos pedidos para uma viagem do robo.
 # take = false: so consulta quantos pedidos estao esperando (nao tira nada da fila).
 # take = true: tira os pedidos mais urgentes que cabem em max_items e max_tables.
+# tables_in_trip: mesas que ja estao na viagem (pedido novo entrando no meio da
+#   viagem). Pedido dessas mesas nao conta como mesa nova, e nada passa do limite.
 uint32 max_items
 uint8 max_tables
 bool take
+uint8[] tables_in_trip
 ---
 OrderStatus[] orders
 uint32 waiting       # pedidos esperando (antes de tirar)

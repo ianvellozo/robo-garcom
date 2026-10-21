@@ -177,6 +177,10 @@ class Planejador:
         k = self.m.celula(x, y)
         return 0.0 if k is None else self.dist_est[k]
 
+    def distancia_dinamica(self, x, y):
+        k = self.m.celula(x, y)
+        return 0.0 if k is None else self.dist_din[k]
+
     def distancia_obstaculo(self, x, y):
         k = self.m.celula(x, y)
         return 0.0 if k is None else min(self.dist_est[k], self.dist_din[k])

@@ -14,9 +14,11 @@ Dois modos (parametro ~modo):
             3. olha o laser (~scan_topic): se aparece algo no caminho, desacelera e
                PARA antes de encostar. Se o obstaculo continua la, marca no mapa e
                replaneja por outro caminho (desvio). Se ele sai, segue a rota.
+               Se algo aparece colado na frente, o robo da uma re curta (o laser so
+               ve a frente, entao ele confere no mapa se atras esta livre).
 
 Publica tambem:
-  /garcom/nav_state  parado, andando, obstaculo, desviando ou sem_caminho (telas)
+  /garcom/nav_state  parado, andando, obstaculo, desviando, recuando ou sem_caminho (telas)
   /garcom/path       rota planejada (nav_msgs/Path, para o RViz)
   /map               mapa usado (nav_msgs/OccupancyGrid, para o RViz)
 """
@@ -137,6 +139,9 @@ class NavegacaoReal(Base):
         self.d_reduzir = float(p("distancia_reduzir", 1.2))  # comeca a desacelerar a esta distancia
         self.espera = float(p("espera_obstaculo_s", 3.0))   # espera antes de desviar
         self.validade = float(p("validade_obstaculo_s", 20.0))
+        self.d_re = float(p("distancia_re", 0.40))          # algo mais perto que isso do centro: da re
+        self.re_max = float(p("re_max", 0.40))              # quanto da re no maximo (m)
+        self.v_re = float(p("velocidade_re", 0.12))         # velocidade da re (m/s)
         self.laser_x = float(p("laser_x", 0.15))            # laser a frente do centro (m)
         self.laser_invertido = bool(p("laser_invertido", False))
         mapa_path = p("mapa", MAPA_PADRAO)
@@ -317,8 +322,9 @@ class NavegacaoReal(Base):
             return None
         mais_perto = None
         for mx, my, fx, fy in pts:
-            # algo que nao esta no mapa colado na frente/lado do robo: para ja
-            if fx > -0.05 and math.hypot(fx, fy) < self.frente + 0.12 and \
+            # algo que nao esta no mapa colado no para-choque: para ja
+            # (so na frente: o que esta do lado nao impede o robo de seguir)
+            if 0.0 < fx < self.frente + 0.12 and abs(fy) < self.meia_largura and \
                     self.plan.distancia_estatica(mx, my) > 0.12:
                 return 0.0
             if fx <= 0.0 or math.hypot(fx, fy) > alcance + self.meia_largura:
@@ -329,6 +335,52 @@ class NavegacaoReal(Base):
                 if mais_perto is None or d < mais_perto:
                     mais_perto = d
         return mais_perto
+
+    def colado(self, pts):
+        """Distancia (do centro do robo) da coisa mais perto que nao esta no mapa, na frente."""
+        d = float("inf")
+        for mx, my, fx, fy in pts:
+            if fx > -0.05 and self.plan.distancia_estatica(mx, my) > 0.12:
+                d = min(d, math.hypot(fx, fy))
+        return d
+
+    def dar_re(self, taxa, dt):
+        """Re curta e devagar para longe de algo colado na frente. Devolve quanto recuou (m)."""
+        with self.lock:
+            x0, y0, yaw = self.pose
+        # o laser so enxerga a frente: confere no mapa se atras esta livre
+        # (para se for chegar perto de um movel ou de alguem visto antes)
+        c, s_ = math.cos(yaw), math.sin(yaw)
+        livre = 0.0
+        ant_est = self.plan.distancia_estatica(x0, y0)
+        ant_din = self.plan.distancia_dinamica(x0, y0)
+        while livre + 0.05 <= self.re_max + 1e-9:
+            bx, by = x0 - (livre + 0.05) * c, y0 - (livre + 0.05) * s_
+            d_est, d_din = self.plan.distancia_estatica(bx, by), self.plan.distancia_dinamica(bx, by)
+            if (d_est < 0.32 and d_est < ant_est) or (d_din < 0.32 and d_din < ant_din):
+                break
+            ant_est, ant_din = d_est, d_din
+            livre += 0.05
+        if livre < 0.1:
+            rospy.logwarn("Algo colado na frente e sem espaco atras: esperando.")
+            return 0.0
+        rospy.logwarn("Obstaculo colado na frente: dando re de %.0f cm.", livre * 100)
+        self.set_estado("recuando")
+        andou = 0.0
+        fim = rospy.get_time() + livre / self.v_re + 3.0
+        while not rospy.is_shutdown() and rospy.get_time() < fim and not self.server.is_preempt_requested():
+            with self.lock:
+                x, y, _ = self.pose
+            andou = math.hypot(x - x0, y - y0)
+            if andou >= livre - 0.02:
+                break
+            self.comandar(-min(self.v_re, max(0.05, 1.5 * (livre - andou))), 0.0, dt)
+            taxa.sleep()
+        while abs(self.v) > 0.01 and not rospy.is_shutdown():
+            self.comandar(0.0, 0.0, dt)
+            taxa.sleep()
+        self.parar_ja()
+        return andou
 
     def limpar_marcas_vistas(self, x, y, yaw):
         """Apaga obstaculos marcados que o laser agora enxerga atraves (a pessoa saiu)."""
@@ -418,6 +470,9 @@ class NavegacaoReal(Base):
             rospy.sleep(2.0)
             self.plan.esquecer_vencidos(rospy.get_time())
             x, y, yaw = self.esperar_pose(1.0) or (x, y, 0)
+            if self.colado(self.pontos_laser(x, y, yaw)) < self.d_re:
+                self.dar_re(taxa, dt)
+                x, y, yaw = self.esperar_pose(1.0) or (x, y, yaw)
             self.limpar_marcas_vistas(x, y, yaw)
             rota = self.planejar(x, y, gx, gy)
 
@@ -425,7 +480,8 @@ class NavegacaoReal(Base):
         desviando = False
         i = 0
         bloqueado_desde = None
-        ultimo_replan = ultimo_olhar = ultimo_feedback = 0.0
+        ultimo_replan = ultimo_olhar = ultimo_feedback = ultima_re = 0.0
+        res = 0
         progresso_t, progresso_d = rospy.get_time(), float("inf")
         limite_t = rospy.get_time() + max(120.0, 4 * planejador.comprimento(rota) / self.v_max + 60)
 
@@ -483,13 +539,27 @@ class NavegacaoReal(Base):
 
             # --- seguranca: obstaculo perto no caminho -> desacelera ou para
             obst = self.obstaculo_no_caminho(rota, i, x, y, pts, restante) if v_alvo > 0 else None
+            perto = self.colado(pts)
             parar = obst is not None and obst < (self.d_parada + (0.1 if bloqueado_desde else 0.0))
+            if v_alvo == 0 and perto < self.d_re:
+                parar = True  # girar no lugar com alguem encostado pode bater: espera ou da re
             if parar:
                 if bloqueado_desde is None:
                     bloqueado_desde = agora
-                    rospy.logwarn("Obstaculo a %.2f m no caminho: parando.", obst)
+                    rospy.logwarn("Obstaculo a %.2f m no caminho: parando.",
+                                  obst if obst is not None else max(0.0, perto - self.frente))
                     self.set_estado("obstaculo")
                 self.comandar(0.0, 0.0, dt, freio=self.freio_forte)
+                # algo colado no robo: re curta para ganhar espaco (no maximo 4 vezes por destino)
+                if perto < self.d_re and agora - bloqueado_desde > 1.0 and agora - ultima_re > 3.0 and res < 4:
+                    res += 1
+                    recuou = self.dar_re(taxa, dt)
+                    ultima_re = rospy.get_time()
+                    if recuou > 0:
+                        # depois da re, ja tenta outro caminho
+                        bloqueado_desde, ultimo_replan = ultima_re - self.espera, 0.0
+                        self.set_estado("obstaculo")
+                    continue
                 if agora - bloqueado_desde > self.espera and agora - ultimo_replan > 2.0:
                     ultimo_replan = agora
                     self.plan.esquecer_vencidos(agora)

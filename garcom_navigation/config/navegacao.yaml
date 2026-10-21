@@ -23,6 +23,9 @@ largura_checagem: 0.27      # m: meia largura do corredor checado na frente do r
 distancia_reduzir: 1.2      # m: comeca a desacelerar quando ha algo a essa distancia
 distancia_parada: 0.45      # m: para quando ha algo a essa distancia do para-choque
 espera_obstaculo_s: 3.0     # s parado esperando o obstaculo sair antes de desviar
+distancia_re: 0.40          # m do centro: algo mais perto que isso na frente faz o robo dar re
+re_max: 0.40                # m: re maxima (o laser nao ve atras; o robo confere no mapa)
+velocidade_re: 0.12         # m/s
 validade_obstaculo_s: 20.0  # s que um obstaculo visto fica marcado no mapa
 laser_x: 0.15               # m: posicao do laser a frente do centro do robo
 laser_invertido: false      # true se o laser estiver montado de cabeca para baixo

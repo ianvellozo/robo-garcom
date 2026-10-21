@@ -110,6 +110,8 @@ class Bridge:
 
     def on_pickup(self, msg):
         entry = {
+            "comanda": msg.ticket_id,
+            "extra": msg.extra,
             "viagem": msg.trip_id,
             "estacao": msg.station,
             "estacao_nome": self.stations.get(msg.station, msg.station),
@@ -120,14 +122,13 @@ class Bridge:
             "desde": rospy.Time.now().to_sec(),
         }
         with self.lock:
-            if not any(p["viagem"] == msg.trip_id and p["estacao"] == msg.station for p in self.pickups):
+            if not any(p["comanda"] == msg.ticket_id for p in self.pickups):
                 self.pickups.append(entry)
 
     def on_pickup_done(self, msg):
         # confirmada por outra tela (terminal ou modo automático)
         with self.lock:
-            self.pickups = [p for p in self.pickups
-                            if not (p["viagem"] == msg.trip_id and p["estacao"] == msg.station)]
+            self.pickups = [p for p in self.pickups if p["comanda"] != msg.ticket_id]
 
     def on_nav(self, msg):
         with self.lock:
@@ -188,15 +189,15 @@ class Bridge:
         rospy.loginfo("Pedido %d feito pela tela da mesa %d", order_id, mesa)
         return order_id
 
-    def confirm_pickup(self, viagem, estacao):
+    def confirm_pickup(self, comanda):
         with self.lock:
-            before = len(self.pickups)
-            self.pickups = [p for p in self.pickups if not (p["viagem"] == viagem and p["estacao"] == estacao)]
-            found = len(self.pickups) < before
+            found = next((p for p in self.pickups if p["comanda"] == comanda), None)
+            self.pickups = [p for p in self.pickups if p["comanda"] != comanda]
         if not found:
             raise ValueError("Essa bandeja já foi confirmada.")
-        self.done_pub.publish(PickupDone(trip_id=viagem, station=estacao))
-        rospy.loginfo("Bandeja pronta: viagem %d em %s (tela da bancada)", viagem, estacao)
+        self.done_pub.publish(PickupDone(ticket_id=comanda, trip_id=found["viagem"], station=found["estacao"]))
+        rospy.loginfo("Bandeja pronta: viagem %d em %s, comanda %d (tela da bancada)",
+                      found["viagem"], found["estacao"], comanda)
 
     def set_stock(self, item, quantidade):
         if item not in self.items or not isinstance(quantidade, int) or quantidade < 0:
@@ -217,11 +218,15 @@ def make_handler(bridge, web_dir):
         def log_message(self, *_args):
             pass  # sem poluir o terminal do ROS
 
+        def end_headers(self):
+            # o navegador sempre confere se a pagina mudou (depois de um git pull nao precisa Ctrl+F5)
+            self.send_header("Cache-Control", "no-cache")
+            super().end_headers()
+
         def send_json(self, data, code=200):
             body = json.dumps(data, ensure_ascii=False).encode("utf-8")
             self.send_response(code)
             self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
@@ -242,7 +247,7 @@ def make_handler(bridge, web_dir):
                 if path == "/api/pedido":
                     return self.send_json({"pedido": bridge.place_order(data.get("mesa"), data.get("itens"))})
                 if path == "/api/bandeja_pronta":
-                    bridge.confirm_pickup(int(data.get("viagem")), str(data.get("estacao")))
+                    bridge.confirm_pickup(int(data.get("comanda")))
                     return self.send_json({"ok": True})
                 if path == "/api/estoque":
                     total = bridge.set_stock(data.get("item"), data.get("quantidade"))

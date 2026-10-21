@@ -137,13 +137,15 @@ class OrderQueue:
             if not req.take or not self.waiting:
                 return NextOrdersResponse(orders=[], waiting=waiting)
             urgent_first = sorted(self.waiting, key=lambda oid: self.remaining(self.active[oid]))
-            chosen, items, tables = [], 0, set()
+            chosen, items, tables = [], 0, set(req.tables_in_trip)
+            in_trip = bool(req.tables_in_trip)  # viagem em andamento: nada passa do limite
             for oid in urgent_first:
                 order = self.active[oid]
                 size = len(order.items)
                 new_table = order.table_id not in tables
-                if chosen and (items + size > req.max_items or
-                               (new_table and len(tables) >= req.max_tables)):
+                # numa viagem nova, o primeiro pedido sempre vai (mesmo se for maior que a bandeja)
+                if (chosen or in_trip) and (items + size > req.max_items or
+                                            (new_table and len(tables) >= req.max_tables)):
                     continue  # não cabe nesta viagem; tenta o próximo
                 chosen.append(oid)
                 items += size
